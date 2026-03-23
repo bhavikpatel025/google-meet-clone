@@ -44,28 +44,16 @@
         </p>
 
         <div class="action-row">
-          <button mat-flat-button color="primary" class="primary-action" (click)="createMeeting()" [disabled]="createLoading">
-            <mat-spinner *ngIf="createLoading" diameter="18"></mat-spinner>
-            <mat-icon *ngIf="!createLoading">video_call</mat-icon>
-            <span>{{ createLoading ? 'Creating...' : 'New meeting' }}</span>
+          <button mat-flat-button color="primary" class="primary-action" (click)="openStartMeetingModal()">
+            <mat-icon>video_call</mat-icon>
+            <span>Start a New Meeting</span>
           </button>
 
-          <div class="join-group">
-            <mat-form-field appearance="outline" class="join-field">
-              <mat-icon matPrefix>keyboard</mat-icon>
-              <input
-                matInput
-                [ngModel]="joinCode"
-                (ngModelChange)="updateJoinCode($event)"
-                (keyup.enter)="joinMeeting()"
-                placeholder="Enter a code or link">
-            </mat-form-field>
-
-            <button mat-button class="join-button" (click)="joinMeeting()" [disabled]="joinLoading || !joinCode.trim()">
-              <span *ngIf="!joinLoading">Join</span>
-              <mat-spinner *ngIf="joinLoading" diameter="18"></mat-spinner>
-            </button>
-          </div>
+          <button mat-stroked-button class="secondary-action" (click)="openJoinMeetingModal()" [disabled]="joinLoading">
+            <mat-spinner *ngIf="joinLoading" diameter="18"></mat-spinner>
+            <mat-icon *ngIf="!joinLoading">keyboard</mat-icon>
+            <span>{{ joinLoading ? 'Joining...' : 'Join Meeting' }}</span>
+          </button>
         </div>
 
         <p class="error-copy" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -100,14 +88,6 @@
 </div>
 
 <mat-menu #menu="matMenu">
-  <button mat-menu-item routerLink="/create-meeting">
-    <mat-icon>add_circle</mat-icon>
-    <span>New meeting</span>
-  </button>
-  <button mat-menu-item routerLink="/join-meeting">
-    <mat-icon>meeting_room</mat-icon>
-    <span>Join Meeting</span>
-  </button>
   <button mat-menu-item (click)="logout()">
     <mat-icon>logout</mat-icon>
     <span>Logout</span>

@@ -1,0 +1,44 @@
+.dialog-shell {
+  min-width: min(92vw, 440px);
+  padding: 10px 6px 2px;
+}
+
+h2[mat-dialog-title] {
+  margin: 0 0 10px;
+  color: #202124;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+mat-dialog-content {
+  padding: 0 0 10px;
+}
+
+.dialog-copy {
+  margin: 0 0 18px;
+  color: #5f6368;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-actions {
+  gap: 10px;
+  padding: 14px 0 0;
+}
+
+.secondary-button,
+.primary-button {
+  min-width: 108px;
+  height: 44px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.primary-button {
+  box-shadow: 0 16px 30px rgba(25, 103, 210, 0.22);
+}

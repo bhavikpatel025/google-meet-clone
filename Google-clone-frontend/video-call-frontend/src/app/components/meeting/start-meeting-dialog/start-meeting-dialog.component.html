@@ -1,0 +1,65 @@
+<div class="dialog-shell">
+  <ng-container *ngIf="mode === 'options'; else readyState">
+    <h2 mat-dialog-title>Start a New Meeting</h2>
+
+    <mat-dialog-content>
+      <p class="dialog-copy">
+        Create a room now, or generate a shareable code for later using the same meeting flow.
+      </p>
+
+      <form [formGroup]="meetingForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Meeting Name</mat-label>
+          <input matInput formControlName="title" placeholder="Instant meeting">
+          <mat-icon matPrefix>title</mat-icon>
+        </mat-form-field>
+      </form>
+
+      <button mat-stroked-button type="button" class="meeting-option secondary-option" (click)="createForLater()" [disabled]="loading">
+        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        <ng-container *ngIf="!loading">
+          <mat-icon>event_available</mat-icon>
+          <span>Create a meeting for later</span>
+        </ng-container>
+      </button>
+
+      <button mat-flat-button type="button" class="meeting-option primary-option" (click)="startInstantMeeting()" [disabled]="loading">
+        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        <ng-container *ngIf="!loading">
+          <mat-icon>video_call</mat-icon>
+          <span>Start Instant Meeting</span>
+        </ng-container>
+      </button>
+
+      <p class="error-copy" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" class="secondary-button" (click)="close()">Cancel</button>
+    </mat-dialog-actions>
+  </ng-container>
+
+  <ng-template #readyState>
+    <h2 mat-dialog-title>Create a meeting for later</h2>
+
+    <mat-dialog-content>
+      <p class="dialog-copy success-copy">Your meeting is ready.</p>
+
+      <div class="code-card">
+        <span class="code-label">Meeting Code</span>
+        <strong class="code-value">{{ meetingCode }}</strong>
+      </div>
+
+      <p class="helper-copy">Share this code with participants whenever you're ready to start.</p>
+      <p class="error-copy" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" class="secondary-button" (click)="close()">Close</button>
+      <button mat-flat-button type="button" class="primary-button" (click)="copyCode()">
+        <mat-icon>{{ copySuccess ? 'check' : 'content_copy' }}</mat-icon>
+        <span>{{ copySuccess ? 'Copied' : 'Copy Code' }}</span>
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
+</div>

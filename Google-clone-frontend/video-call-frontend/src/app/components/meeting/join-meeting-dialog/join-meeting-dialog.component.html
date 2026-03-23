@@ -1,0 +1,28 @@
+<div class="dialog-shell">
+  <h2 mat-dialog-title>Join Meeting</h2>
+
+  <mat-dialog-content>
+    <p class="dialog-copy">Enter the meeting code to join an existing room.</p>
+
+    <form [formGroup]="joinForm">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Meeting Code</mat-label>
+        <input
+          matInput
+          formControlName="meetingCode"
+          placeholder="Enter 8-character code"
+          maxlength="8"
+          (input)="updateCode($any($event.target).value)">
+        <mat-icon matPrefix>meeting_room</mat-icon>
+        <mat-error *ngIf="joinForm.get('meetingCode')?.invalid">
+          Meeting code must be 8 characters
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" class="secondary-button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button type="button" class="primary-button" (click)="submit()">Join Meeting</button>
+  </mat-dialog-actions>
+</div>

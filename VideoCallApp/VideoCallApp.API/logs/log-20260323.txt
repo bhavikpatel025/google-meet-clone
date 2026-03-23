@@ -1,6 +1,0 @@
-2026-03-23 10:12:11.375 +05:30 [INF] Database migrations applied successfully
-2026-03-23 10:12:12.769 +05:30 [INF] Now listening on: https://localhost:7208
-2026-03-23 10:12:12.796 +05:30 [INF] Now listening on: http://localhost:5295
-2026-03-23 10:12:12.945 +05:30 [INF] Application started. Press Ctrl+C to shut down.
-2026-03-23 10:12:13.001 +05:30 [INF] Hosting environment: Development
-2026-03-23 10:12:13.002 +05:30 [INF] Content root path: E:\Bhavik\G-meet-clone\VideoCallApp\VideoCallApp.API

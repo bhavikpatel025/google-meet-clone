@@ -1,7 +1,6 @@
 # ===============================
 # .NET
 # ===============================
-
 bin/
 obj/
 .vs/
@@ -10,18 +9,30 @@ obj/
 *.userosscache
 *.sln.docstates
 
-# build folders
 Debug/
 Release/
+
+# Logs
+logs/
+*.log
+
+# ===============================
+# App Settings / Secrets
+# ===============================
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Local.json
 
 # ===============================
 # Angular / Node
 # ===============================
-
 node_modules/
 dist/
 .angular/
 out-tsc/
+.cache/
 
 npm-debug.log*
 yarn-debug.log*
@@ -29,14 +40,20 @@ yarn-debug.log*
 # ===============================
 # OS Files
 # ===============================
-
 .DS_Store
 Thumbs.db
 
 # ===============================
 # VS Code
 # ===============================
-
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+!.vscode/launch.json
+
+# ===============================
+# Misc
+# ===============================
+coverage/
+tmp/
+temp/

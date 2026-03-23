@@ -1,36 +1,33 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MeetingService } from '../../../services/meeting.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../../services/auth.service';
+import { StartMeetingDialogComponent } from '../start-meeting-dialog/start-meeting-dialog.component';
+import { JoinMeetingDialogComponent } from '../join-meeting-dialog/join-meeting-dialog.component';
+import { firstValueFrom } from 'rxjs';
+import { MeetingService } from '../../../services/meeting.service';
 
 @Component({
   selector: 'app-my-meetings',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatMenuModule,
-    MatFormFieldModule,
-    MatInputModule
+    MatDialogModule
   ],
   templateUrl: './my-meetings.component.html',
   styleUrls: ['./my-meetings.component.css']
 })
 export class MyMeetingsComponent implements OnInit, OnDestroy {
-  joinCode = '';
-  createLoading = false;
   joinLoading = false;
   errorMessage = '';
   currentUserName = '';
@@ -38,9 +35,10 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
   private clockInterval?: ReturnType<typeof setInterval>;
 
   constructor(
-    private meetingService: MeetingService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
+    private meetingService: MeetingService
   ) {
     const currentUser = this.authService.currentUserValue;
     this.currentUserName = currentUser
@@ -60,33 +58,37 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  createMeeting(): void {
-    if (this.createLoading) {
-      return;
-    }
-
-    this.errorMessage = '';
-    this.createLoading = true;
-
-    this.meetingService.createMeeting({ title: 'Instant meeting' }).subscribe({
-      next: (response) => {
-        this.createLoading = false;
-        if (response.success && response.data) {
-          this.router.navigate(['/meeting', response.data.id]);
-          return;
-        }
-
-        this.errorMessage = response.message || 'Failed to create meeting';
-      },
-      error: (error) => {
-        this.createLoading = false;
-        this.errorMessage = error.error?.message || 'Failed to create meeting';
-      }
+  async openStartMeetingModal(): Promise<void> {
+    this.dialog.open(StartMeetingDialogComponent, {
+      width: 'min(100vw - 32px, 520px)',
+      maxWidth: '520px',
+      panelClass: 'meeting-action-dialog-panel',
+      autoFocus: false
     });
   }
 
-  joinMeeting(): void {
-    const meetingCode = this.joinCode.trim().toUpperCase();
+  async openJoinMeetingModal(): Promise<void> {
+    if (this.joinLoading) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(JoinMeetingDialogComponent, {
+      width: 'min(100vw - 32px, 520px)',
+      maxWidth: '520px',
+      panelClass: 'meeting-action-dialog-panel',
+      autoFocus: false
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result?.meetingCode) {
+      return;
+    }
+
+    this.joinMeeting(result.meetingCode);
+  }
+
+  joinMeeting(meetingCodeInput: string): void {
+    const meetingCode = meetingCodeInput.trim().toUpperCase();
     if (!meetingCode || this.joinLoading) {
       return;
     }
@@ -109,10 +111,6 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
         this.errorMessage = error.error?.message || 'Invalid meeting code or link';
       }
     });
-  }
-
-  updateJoinCode(value: string): void {
-    this.joinCode = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
   }
 
   logout(): void {

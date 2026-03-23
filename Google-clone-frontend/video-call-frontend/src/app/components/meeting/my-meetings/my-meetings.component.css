@@ -135,7 +135,7 @@
   width: min(1200px, 100%);
   margin: 0 auto;
   min-height: calc(100vh - 72px);
-  padding: 28px 24px 52px 24px;
+  padding: 28px 24px 52px;
 }
 
 .hero-copy {
@@ -219,35 +219,31 @@
   width: 100%;
 }
 
-.primary-action {
+.primary-action,
+.secondary-action {
   height: 54px;
   border-radius: 18px;
-  padding: 0 22px;
+  padding: 0 24px;
   font-size: 16px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.primary-action {
   box-shadow: 0 14px 28px rgba(25, 103, 210, 0.18);
 }
 
-.join-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;
-  justify-content: center;
+.secondary-action {
+  min-width: 184px;
+  border-color: rgba(60, 64, 67, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 26px rgba(51, 72, 114, 0.08);
 }
 
-.join-field {
-  width: 320px;
-}
-
-.join-button {
-  height: 54px;
-  padding: 0 10px;
-  font-size: 16px;
-  font-weight: 700;
+.secondary-action:hover {
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .error-copy {
@@ -294,13 +290,6 @@
   display: none;
 }
 
-.window-header span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #d2d8e3;
-}
-
 .window-body {
   margin-top: 0;
   min-height: 280px;
@@ -338,6 +327,12 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+:host ::ng-deep .meeting-action-dialog-panel .mat-mdc-dialog-surface {
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 28px 72px rgba(22, 27, 45, 0.24);
 }
 
 @media (max-width: 1180px) {
@@ -386,17 +381,8 @@
   }
 
   .action-row,
-  .join-group {
-    width: 100%;
-  }
-
-  .join-group {
-    flex-wrap: wrap;
-  }
-
   .primary-action,
-  .join-field,
-  .join-button {
+  .secondary-action {
     width: 100%;
   }
 

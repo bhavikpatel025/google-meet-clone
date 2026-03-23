@@ -1,20 +1,36 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <mat-card-header>
+<div class="auth-shell login-shell">
+  <div class="auth-background">
+    <div class="auth-orb auth-orb-blue"></div>
+    <div class="auth-orb auth-orb-amber"></div>
+  </div>
+
+  <mat-card class="auth-card login-card">
+    <div class="auth-brand">
+      <div class="brand-mark">
+        <span class="mark-blue"></span>
+        <span class="mark-green"></span>
+        <span class="mark-yellow"></span>
+      </div>
+      <div class="brand-copy">
+        <span class="brand-title">Video Meet</span>
+        <span class="brand-subtitle">Secure meetings for your team</span>
+      </div>
+    </div>
+
+    <mat-card-header class="auth-header">
       <mat-card-title>
-        <h1>Video Call App</h1>
+        <h1>Welcome Back</h1>
       </mat-card-title>
-      <mat-card-subtitle>Login to your account</mat-card-subtitle>
+      <mat-card-subtitle>Sign in to continue</mat-card-subtitle>
     </mat-card-header>
 
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <!-- Email Field -->
+    <mat-card-content class="auth-content">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input 
-            matInput 
-            type="email" 
+          <mat-label>Email Address</mat-label>
+          <input
+            matInput
+            type="email"
             formControlName="email"
             placeholder="Enter your email"
             autocomplete="email">
@@ -24,19 +40,18 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- Password Field -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
-          <input 
-            matInput 
+          <input
+            matInput
             [type]="hidePassword ? 'password' : 'text'"
             formControlName="password"
             placeholder="Enter your password"
             autocomplete="current-password">
           <mat-icon matPrefix>lock</mat-icon>
-          <button 
-            mat-icon-button 
-            matSuffix 
+          <button
+            mat-icon-button
+            matSuffix
             type="button"
             (click)="hidePassword = !hidePassword"
             [attr.aria-label]="'Hide password'"
@@ -48,27 +63,24 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- Error Message -->
         <div *ngIf="errorMessage" class="error-message">
           <mat-icon>error</mat-icon>
           <span>{{ errorMessage }}</span>
         </div>
 
-        <!-- Login Button -->
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           type="submit"
-          class="full-width login-button"
+          class="full-width primary-submit"
           [disabled]="loading || loginForm.invalid">
           <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-          <span *ngIf="!loading">Login</span>
+          <span *ngIf="!loading">Sign In</span>
         </button>
 
-        <!-- Register Link -->
-        <div class="register-link">
-          <span>Don't have an account? </span>
-          <a routerLink="/register">Register here</a>
+        <div class="auth-link">
+          <span>Don't have an account?</span>
+          <a routerLink="/register">Create Account</a>
         </div>
       </form>
     </mat-card-content>

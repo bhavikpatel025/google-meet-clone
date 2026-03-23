@@ -1,0 +1,252 @@
+<div class="meeting-room-container" *ngIf="!loading">
+  <!-- Header -->
+  <div class="meeting-header">
+    <div class="meeting-info">
+      <h2>{{ meeting?.title }}</h2>
+      <span class="meeting-code">Code: {{ meeting?.meetingCode }}</span>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button [matBadge]="getParticipantCount()" matBadgeColor="accent" (click)="toggleParticipants()" matTooltip="Participants">
+        <mat-icon>people</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="meeting-content">
+    <!-- Video Grid -->
+    <div class="meeting-stage" [ngClass]="{'with-sidebar': showParticipants || showChat}">
+      <ng-container *ngIf="screenShareTile; else standardGrid">
+        <div class="screen-share-layout">
+          <div class="video-container main-screen">
+            <video
+              [srcObject]="screenShareTile.stream"
+              autoplay
+              playsinline
+              [muted]="screenShareTile.isLocal"
+              class="video-element screen-share-video">
+            </video>
+            <div class="video-overlay">
+              <span class="participant-name">{{ screenShareTile.userName }}</span>
+              <div class="video-status">
+                <mat-icon *ngIf="!screenShareTile.isCameraOn && !screenShareTile.isScreenSharing" class="status-icon">videocam_off</mat-icon>
+                <mat-icon *ngIf="!screenShareTile.isMicrophoneOn" class="status-icon">mic_off</mat-icon>
+                <mat-icon *ngIf="screenShareTile.isScreenSharing" class="status-icon active-status">screen_share</mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <div class="secondary-grid" [ngClass]="{'single-tile': secondaryTiles.length === 1}">
+            <div class="video-container secondary-tile" *ngFor="let tile of secondaryTiles; trackBy: trackTile">
+              <video
+                [srcObject]="tile.stream"
+                autoplay
+                playsinline
+                [muted]="tile.isLocal"
+                class="video-element">
+              </video>
+              <div class="video-overlay">
+                <span class="participant-name">{{ tile.userName }}</span>
+                <div class="video-status">
+                  <mat-icon *ngIf="!tile.isCameraOn && !tile.isScreenSharing" class="status-icon">videocam_off</mat-icon>
+                  <mat-icon *ngIf="!tile.isMicrophoneOn" class="status-icon">mic_off</mat-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #standardGrid>
+        <div class="container-fluid h-100 participant-grid-shell">
+          <div class="row g-3 justify-content-center align-items-center h-100 video-grid-row">
+            <div [class]="getVideoTileColumnClasses()" *ngFor="let tile of allParticipantTiles; trackBy: trackTile">
+              <div class="video-container participant-tile bootstrap-video-tile">
+                <video
+                  [srcObject]="tile.stream"
+                  autoplay
+                  playsinline
+                  [muted]="tile.isLocal"
+                  class="video-element">
+                </video>
+                <div class="video-overlay">
+                  <span class="participant-name">{{ tile.userName }}</span>
+                  <div class="video-status">
+                    <mat-icon *ngIf="!tile.isCameraOn && !tile.isScreenSharing" class="status-icon">videocam_off</mat-icon>
+                    <mat-icon *ngIf="!tile.isMicrophoneOn" class="status-icon">mic_off</mat-icon>
+                    <mat-icon *ngIf="tile.isScreenSharing" class="status-icon active-status">screen_share</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Participants Sidebar -->
+    <div class="sidebar participants-sidebar" *ngIf="showParticipants">
+      <div class="sidebar-header">
+        <h3>People ({{ getParticipantCount() }})</h3>
+        <button mat-icon-button (click)="toggleParticipants()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="participant-search">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-icon matPrefix>search</mat-icon>
+          <input
+            matInput
+            [(ngModel)]="participantSearchTerm"
+            placeholder="Search for people"
+            autocomplete="off">
+        </mat-form-field>
+      </div>
+      <div class="participants-list">
+        <div class="participant-row current-user">
+          <div class="participant-main">
+            <div class="participant-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="participant-meta">
+              <div class="participant-line">
+                <span class="participant-display-name">You</span>
+                <span class="participant-badge self-badge">You</span>
+                <span class="participant-badge host-badge" *ngIf="isHost">Host</span>
+              </div>
+              <div class="participant-subtitle">Connected on this device</div>
+            </div>
+          </div>
+
+          <div class="participant-status-icons">
+            <mat-icon class="participant-icon" [class.icon-off]="!isCameraOn" [class.icon-on]="isCameraOn">videocam</mat-icon>
+            <mat-icon class="participant-icon" [class.icon-off]="!isMicrophoneOn" [class.icon-on]="isMicrophoneOn">mic</mat-icon>
+            <mat-icon class="participant-icon screen-icon" *ngIf="isScreenSharing">screen_share</mat-icon>
+          </div>
+        </div>
+
+        <div class="participant-row" *ngFor="let participant of filteredParticipants">
+          <div class="participant-main">
+            <div class="participant-avatar remote-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="participant-meta">
+              <div class="participant-line">
+                <span class="participant-display-name">{{ participant.userName }}</span>
+                <span class="participant-badge host-badge" *ngIf="participant.role === 'Host'">Host</span>
+              </div>
+              <div class="participant-subtitle">
+                {{ participant.isScreenSharing ? 'Presenting now' : 'In meeting' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="participant-status-icons">
+            <mat-icon class="participant-icon" [class.icon-off]="!participant.isCameraOn" [class.icon-on]="participant.isCameraOn">videocam</mat-icon>
+            <mat-icon class="participant-icon" [class.icon-off]="!participant.isMicrophoneOn" [class.icon-on]="participant.isMicrophoneOn">mic</mat-icon>
+            <mat-icon class="participant-icon screen-icon" *ngIf="participant.isScreenSharing">screen_share</mat-icon>
+          </div>
+        </div>
+
+        <div class="empty-participants" *ngIf="filteredParticipants.length === 0">
+          <mat-icon>search_off</mat-icon>
+          <p>No participants found</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Sidebar -->
+    <div class="sidebar chat-sidebar" *ngIf="showChat">
+      <div class="sidebar-header">
+        <h3>Chat</h3>
+        <button mat-icon-button (click)="toggleChat()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <div class="chat-messages">
+        <div *ngFor="let message of chatMessages" class="chat-message" [class.own-message]="message.senderId === currentUserId">
+          <div class="message-header">
+            <span class="sender-name">{{ message.senderName }}</span>
+            <span class="message-time">{{ formatTime(message.sentAt) }}</span>
+          </div>
+          <div class="message-content">{{ message.message }}</div>
+        </div>
+        
+        <div *ngIf="chatMessages.length === 0" class="no-messages">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          <p>No messages yet. Start the conversation!</p>
+        </div>
+      </div>
+
+      <form [formGroup]="chatForm" (ngSubmit)="sendMessage()" class="chat-input">
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput formControlName="message" placeholder="Type a message..." autocomplete="off">
+          <button mat-icon-button matSuffix type="submit" [disabled]="!chatForm.value.message?.trim()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </mat-form-field>
+      </form>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="meeting-controls">
+    <div class="meeting-meta-footer">
+      <span>{{ currentTimeLabel }}</span>
+      <span class="meta-divider">|</span>
+      <span>{{ meeting?.meetingCode }}</span>
+    </div>
+
+    <div class="control-buttons">
+      <!-- Camera Toggle -->
+      <button mat-mini-fab [color]="isCameraOn ? 'primary' : 'warn'" (click)="toggleCamera()" matTooltip="{{ isCameraOn ? 'Turn off camera' : 'Turn on camera' }}">
+        <mat-icon>{{ isCameraOn ? 'videocam' : 'videocam_off' }}</mat-icon>
+      </button>
+
+      <!-- Microphone Toggle -->
+      <button mat-mini-fab [color]="isMicrophoneOn ? 'primary' : 'warn'" (click)="toggleMicrophone()" matTooltip="{{ isMicrophoneOn ? 'Mute' : 'Unmute' }}">
+        <mat-icon>{{ isMicrophoneOn ? 'mic' : 'mic_off' }}</mat-icon>
+      </button>
+
+      <!-- Screen Share Toggle -->
+      <button mat-mini-fab [color]="isScreenSharing ? 'accent' : 'primary'" (click)="toggleScreenShare()" matTooltip="{{ isScreenSharing ? 'Stop sharing' : 'Share screen' }}">
+        <mat-icon>{{ isScreenSharing ? 'stop_screen_share' : 'screen_share' }}</mat-icon>
+      </button>
+
+      <!-- Leave Meeting -->
+      <button mat-mini-fab color="warn" (click)="leaveMeeting()" matTooltip="Leave meeting">
+        <mat-icon>call_end</mat-icon>
+      </button>
+
+      <!-- End Meeting (Host Only) -->
+      <button *ngIf="isHost" mat-mini-fab style="background-color: #d32f2f" (click)="endMeeting()" matTooltip="End meeting for all">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <button
+    mat-fab
+    class="floating-chat-button"
+    [matBadge]="unreadMessages"
+    [matBadgeHidden]="unreadMessages === 0"
+    matBadgeColor="warn"
+    (click)="toggleChat()"
+    matTooltip="Chat">
+    <mat-icon>{{ showChat ? 'close' : 'chat' }}</mat-icon>
+  </button>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+  <p>Joining meeting...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="errorMessage && !loading">
+  <mat-icon>error</mat-icon>
+  <p>{{ errorMessage }}</p>
+  <button mat-raised-button routerLink="/my-meetings">Back to Meetings</button>
+</div>

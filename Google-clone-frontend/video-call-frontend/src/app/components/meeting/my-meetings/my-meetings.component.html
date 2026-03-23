@@ -1,0 +1,115 @@
+<div class="landing-shell">
+  <header class="topbar">
+    <div class="header-left">
+      <div class="brand-mark">
+        <span class="mark-blue"></span>
+        <span class="mark-green"></span>
+        <span class="mark-yellow"></span>
+      </div>
+      <div class="brand-copy">
+        <span class="brand-title">Video Meet</span>
+        <span class="brand-subtitle">Fast meetings for your team</span>
+      </div>
+    </div>
+
+    <div class="header-center"></div>
+
+    <div class="header-right">
+      <span class="header-time">{{ currentDateTimeLabel }}</span>
+      <span class="welcome-copy">{{ currentUserName }}</span>
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Account menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="landing-body">
+    <aside class="nav-rail">
+      <button class="rail-link active" type="button">
+        <mat-icon>video_camera_front</mat-icon>
+        <span>Meetings</span>
+      </button>
+      <button class="rail-link" type="button">
+        <mat-icon>call</mat-icon>
+        <span>Calls</span>
+      </button>
+    </aside>
+
+    <main class="hero-container">
+      <section class="hero-copy">
+        <p class="eyebrow">Meet from anywhere</p>
+        <h1>Video calls and meetings for everyone.</h1>
+        <p class="hero-text">
+          Connect, collaborate, and celebrate from anywhere with Google Meet
+        </p>
+
+        <div class="action-row">
+          <button mat-flat-button color="primary" class="primary-action" (click)="createMeeting()" [disabled]="createLoading">
+            <mat-spinner *ngIf="createLoading" diameter="18"></mat-spinner>
+            <mat-icon *ngIf="!createLoading">video_call</mat-icon>
+            <span>{{ createLoading ? 'Creating...' : 'New meeting' }}</span>
+          </button>
+
+          <div class="join-group">
+            <mat-form-field appearance="outline" class="join-field">
+              <mat-icon matPrefix>keyboard</mat-icon>
+              <input
+                matInput
+                [ngModel]="joinCode"
+                (ngModelChange)="updateJoinCode($event)"
+                (keyup.enter)="joinMeeting()"
+                placeholder="Enter a code or link">
+            </mat-form-field>
+
+            <button mat-button class="join-button" (click)="joinMeeting()" [disabled]="joinLoading || !joinCode.trim()">
+              <span *ngIf="!joinLoading">Join</span>
+              <mat-spinner *ngIf="joinLoading" diameter="18"></mat-spinner>
+            </button>
+          </div>
+        </div>
+
+        <p class="error-copy" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <div class="hero-divider"></div>
+      </section>
+
+      <section class="hero-visual">
+        <div class="visual-card">
+          <div class="visual-stage">
+            <div class="floating-pill">Share link instantly</div>
+            <div class="visual-illustration">
+              <div class="meeting-window large-window">
+                <div class="window-header">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="window-body">
+                  <div class="avatar-circle host-avatar"></div>
+                  <div class="avatar-circle guest-avatar"></div>
+                  <div class="code-chip">ROOM • CODE</div>
+                </div>
+              </div>
+              <div class="meeting-window small-window"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item routerLink="/create-meeting">
+    <mat-icon>add_circle</mat-icon>
+    <span>New meeting</span>
+  </button>
+  <button mat-menu-item routerLink="/join-meeting">
+    <mat-icon>meeting_room</mat-icon>
+    <span>Join Meeting</span>
+  </button>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>

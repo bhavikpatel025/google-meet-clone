@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoCallApp.API", "VideoCallApp.API\VideoCallApp.API.csproj", "{63DFE3EE-94E0-4B60-872E-345E1A2EFC4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoCallApp.Domain", "VideoCallApp.Domain\VideoCallApp.Domain.csproj", "{FE1CB45C-0733-4B1B-A916-51450CE83E19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoCallApp.Application", "VideoCallApp.Application\VideoCallApp.Application.csproj", "{DFCE05CE-D2FA-4D14-8210-EEFB6F2C29B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoCallApp.Infrastructure", "VideoCallApp.Infrastructure\VideoCallApp.Infrastructure.csproj", "{517CFF06-4883-4056-8249-913D60F0EBBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoCallApp.Persistence", "VideoCallApp.Persistence\VideoCallApp.Persistence.csproj", "{7B1118EB-C1DA-4446-AA02-65061A013726}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63DFE3EE-94E0-4B60-872E-345E1A2EFC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63DFE3EE-94E0-4B60-872E-345E1A2EFC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63DFE3EE-94E0-4B60-872E-345E1A2EFC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63DFE3EE-94E0-4B60-872E-345E1A2EFC4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE1CB45C-0733-4B1B-A916-51450CE83E19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE1CB45C-0733-4B1B-A916-51450CE83E19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE1CB45C-0733-4B1B-A916-51450CE83E19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE1CB45C-0733-4B1B-A916-51450CE83E19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFCE05CE-D2FA-4D14-8210-EEFB6F2C29B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFCE05CE-D2FA-4D14-8210-EEFB6F2C29B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFCE05CE-D2FA-4D14-8210-EEFB6F2C29B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFCE05CE-D2FA-4D14-8210-EEFB6F2C29B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{517CFF06-4883-4056-8249-913D60F0EBBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{517CFF06-4883-4056-8249-913D60F0EBBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{517CFF06-4883-4056-8249-913D60F0EBBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{517CFF06-4883-4056-8249-913D60F0EBBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B1118EB-C1DA-4446-AA02-65061A013726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B1118EB-C1DA-4446-AA02-65061A013726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B1118EB-C1DA-4446-AA02-65061A013726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B1118EB-C1DA-4446-AA02-65061A013726}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {487B4C79-910E-40FB-A5B5-95AF216C8389}
+	EndGlobalSection
+EndGlobal

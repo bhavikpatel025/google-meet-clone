@@ -1,0 +1,256 @@
+2026-03-17 18:01:36.373 +05:30 [INF] Database migrations applied successfully
+2026-03-17 18:01:37.441 +05:30 [INF] Now listening on: https://localhost:7208
+2026-03-17 18:01:37.445 +05:30 [INF] Now listening on: http://localhost:5295
+2026-03-17 18:01:37.828 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-17 18:01:37.854 +05:30 [INF] Hosting environment: Development
+2026-03-17 18:01:37.856 +05:30 [INF] Content root path: E:\Bhavik\Google-meet-clone\VideoCallApp\VideoCallApp.API
+2026-03-17 18:10:53.974 +05:30 [INF] HTTP OPTIONS /api/Auth/login responded 204 in 466.9980 ms
+2026-03-17 18:11:33.596 +05:30 [ERR] HTTP POST /api/Auth/login responded 500 in 23566.2423 ms
+System.IO.IOException: The client reset the request stream.
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestStream.ReadAsyncInternal(Memory`1 destination, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Text.Json.Serialization.ReadBufferState.ReadFromStreamAsync(Stream utf8Json, CancellationToken cancellationToken, Boolean fillBuffer)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObjectAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder.BindModelAsync(ModelBindingContext bindingContext)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.BindModelAsync(ActionContext actionContext, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor parameter, ModelMetadata metadata, Object value, Object container)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-03-17 18:11:35.853 +05:30 [ERR] An unhandled exception occurred
+System.IO.IOException: The client reset the request stream.
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestStream.ReadAsyncInternal(Memory`1 destination, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Text.Json.Serialization.ReadBufferState.ReadFromStreamAsync(Stream utf8Json, CancellationToken cancellationToken, Boolean fillBuffer)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObjectAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder.BindModelAsync(ModelBindingContext bindingContext)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.BindModelAsync(ActionContext actionContext, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor parameter, ModelMetadata metadata, Object value, Object container)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at VideoCallApp.API.Middleware.GlobalExceptionHandlerMiddleware.InvokeAsync(HttpContext context) in E:\Bhavik\Google-meet-clone\VideoCallApp\VideoCallApp.API\Middleware\GlobalExceptionHandlerMiddleware.cs:line 23
+2026-03-17 18:11:43.669 +05:30 [INF] HTTP OPTIONS /api/Auth/login responded 204 in 0.7698 ms
+2026-03-17 18:11:48.010 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 4329.6616 ms
+2026-03-17 18:11:48.326 +05:30 [INF] HTTP OPTIONS /api/Meeting/my-meetings responded 204 in 0.1085 ms
+2026-03-17 18:11:49.388 +05:30 [INF] HTTP GET /api/Meeting/my-meetings responded 200 in 1031.5549 ms
+2026-03-17 18:12:49.144 +05:30 [INF] HTTP OPTIONS /api/Meeting responded 204 in 0.1523 ms
+2026-03-17 18:12:49.264 +05:30 [INF] HTTP POST /api/Meeting responded 400 in 104.5692 ms
+2026-03-17 18:13:02.987 +05:30 [INF] HTTP OPTIONS /api/Meeting responded 204 in 0.0734 ms
+2026-03-17 18:13:03.310 +05:30 [INF] HTTP POST /api/Meeting responded 200 in 300.7119 ms
+2026-03-17 18:13:08.322 +05:30 [INF] HTTP OPTIONS /api/Meeting/my-meetings responded 204 in 3.3496 ms
+2026-03-17 18:13:08.394 +05:30 [INF] HTTP GET /api/Meeting/my-meetings responded 200 in 32.9487 ms
+2026-03-17 18:13:12.615 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0554 ms
+2026-03-17 18:13:12.671 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 41.0187 ms
+2026-03-17 18:13:15.563 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0708 ms
+2026-03-17 18:13:15.656 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 85.5023 ms
+2026-03-17 18:13:25.509 +05:30 [INF] HTTP OPTIONS /api/Meeting/my-meetings responded 204 in 0.9537 ms
+2026-03-17 18:13:25.516 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 12820.4974 ms
+2026-03-17 18:13:25.630 +05:30 [INF] HTTP GET /api/Meeting/my-meetings responded 200 in 111.2111 ms
+2026-03-17 18:13:26.791 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0836 ms
+2026-03-17 18:13:26.822 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 24.5027 ms
+2026-03-17 18:13:27.849 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.1497 ms
+2026-03-17 18:13:27.898 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 24.5897 ms
+2026-03-17 18:13:39.591 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0557 ms
+2026-03-17 18:13:39.650 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 52.2823 ms
+2026-03-17 18:13:40.576 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 5.1389 ms
+2026-03-17 18:14:20.541 +05:30 [INF] HTTP OPTIONS /api/Auth/login responded 204 in 0.0839 ms
+2026-03-17 18:14:20.790 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 244.8582 ms
+2026-03-17 18:14:20.933 +05:30 [INF] HTTP OPTIONS /api/Meeting/my-meetings responded 204 in 0.0482 ms
+2026-03-17 18:14:20.979 +05:30 [INF] HTTP GET /api/Meeting/my-meetings responded 200 in 36.3529 ms
+2026-03-17 18:14:26.330 +05:30 [INF] HTTP OPTIONS /api/Meeting/code/6SISAAQH responded 204 in 0.1386 ms
+2026-03-17 18:14:26.486 +05:30 [INF] HTTP GET /api/Meeting/code/6SISAAQH responded 200 in 148.6969 ms
+2026-03-17 18:14:26.552 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0448 ms
+2026-03-17 18:14:26.570 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 8.9500 ms
+2026-03-17 18:14:27.734 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0475 ms
+2026-03-17 18:14:27.764 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 6.8434 ms
+2026-03-17 18:14:29.920 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0478 ms
+2026-03-17 18:14:29.935 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 6.8573 ms
+2026-03-17 18:14:30.342 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 4.5766 ms
+2026-03-17 18:15:49.666 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0641 ms
+2026-03-17 18:15:49.680 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 4.0294 ms
+2026-03-17 18:15:59.391 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 92803.9298 ms
+2026-03-17 18:15:59.617 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0541 ms
+2026-03-17 18:15:59.667 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 32.7132 ms
+2026-03-17 18:16:00.856 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0395 ms
+2026-03-17 18:16:00.905 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 25.8621 ms
+2026-03-17 18:16:04.339 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 4654.6833 ms
+2026-03-17 18:16:04.442 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 14.4992 ms
+2026-03-17 18:16:05.631 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 25.0854 ms
+2026-03-17 18:16:32.350 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0550 ms
+2026-03-17 18:16:32.366 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 4.1253 ms
+2026-03-17 18:16:42.471 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0794 ms
+2026-03-17 18:16:42.485 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 4.2412 ms
+2026-03-17 18:26:58.600 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 811660.6490 ms
+2026-03-17 18:26:58.600 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 654010.2171 ms
+2026-03-17 18:26:59.492 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 2.7381 ms
+2026-03-17 18:26:59.492 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 2.7995 ms
+2026-03-17 18:27:04.675 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 4674.1449 ms
+2026-03-17 18:27:04.686 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 4693.1990 ms
+2026-03-17 18:27:14.036 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0589 ms
+2026-03-17 18:27:14.118 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0625 ms
+2026-03-17 18:27:14.656 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 561.1198 ms
+2026-03-17 18:27:14.656 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 525.5301 ms
+2026-03-17 18:28:27.545 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 82362.9759 ms
+2026-03-17 18:28:27.547 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 82365.4876 ms
+2026-03-17 18:28:27.922 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.1436 ms
+2026-03-17 18:28:27.959 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 32.7403 ms
+2026-03-17 18:28:28.029 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0336 ms
+2026-03-17 18:28:28.039 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 3.7403 ms
+2026-03-17 18:28:29.534 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0287 ms
+2026-03-17 18:28:29.558 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 16.9866 ms
+2026-03-17 18:28:29.652 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0336 ms
+2026-03-17 18:28:29.667 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 9.4566 ms
+2026-03-17 18:28:37.847 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 9862.7001 ms
+2026-03-17 18:28:37.959 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0794 ms
+2026-03-17 18:28:38.014 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 42.9589 ms
+2026-03-17 18:28:38.934 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0363 ms
+2026-03-17 18:28:39.007 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 18.2814 ms
+2026-03-17 18:28:49.338 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 11287.2152 ms
+2026-03-17 18:28:49.500 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 21442.0258 ms
+2026-03-17 18:28:49.503 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.2320 ms
+2026-03-17 18:28:49.537 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 18.1288 ms
+2026-03-17 18:28:50.315 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0499 ms
+2026-03-17 18:28:50.366 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 42.0883 ms
+2026-03-17 18:28:50.400 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0286 ms
+2026-03-17 18:28:50.459 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 25.1447 ms
+2026-03-17 18:28:51.202 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.1246 ms
+2026-03-17 18:28:51.210 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 4.5786 ms
+2026-03-17 18:29:04.669 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 14239.4672 ms
+2026-03-17 18:29:04.775 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0329 ms
+2026-03-17 18:29:04.801 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 12.2415 ms
+2026-03-17 18:29:05.706 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0336 ms
+2026-03-17 18:29:05.750 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 27.5869 ms
+2026-03-17 18:29:17.855 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.1002 ms
+2026-03-17 18:29:17.955 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 79.6827 ms
+2026-03-17 18:29:19.106 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 6.0804 ms
+2026-03-17 18:29:20.237 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 18.6189 ms
+2026-03-17 18:29:20.734 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 28.6948 ms
+2026-03-17 18:29:45.464 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0398 ms
+2026-03-17 18:29:45.475 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.1471 ms
+2026-03-17 18:30:25.604 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 96044.5785 ms
+2026-03-17 18:30:25.738 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0330 ms
+2026-03-17 18:30:25.775 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 9.2953 ms
+2026-03-17 18:30:26.723 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0316 ms
+2026-03-17 18:30:26.744 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 14.8243 ms
+2026-03-17 18:30:30.754 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 4965.2310 ms
+2026-03-17 18:30:30.886 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0367 ms
+2026-03-17 18:30:30.928 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 23.0446 ms
+2026-03-17 18:30:31.174 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 117.4244 ms
+2026-03-17 18:30:31.257 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 14.3836 ms
+2026-03-17 18:30:32.376 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0367 ms
+2026-03-17 18:30:32.429 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 40.9104 ms
+2026-03-17 18:31:00.613 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 29341.1242 ms
+2026-03-17 18:31:00.722 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.2231 ms
+2026-03-17 18:31:00.741 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 9.7276 ms
+2026-03-17 18:31:01.887 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0308 ms
+2026-03-17 18:31:01.952 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 5.7063 ms
+2026-03-17 18:31:04.108 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 3355.2994 ms
+2026-03-17 18:31:04.257 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 19.9483 ms
+2026-03-17 18:31:04.422 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 12.2224 ms
+2026-03-17 18:31:04.463 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 176.0155 ms
+2026-03-17 18:31:05.278 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 848.8557 ms
+2026-03-17 18:31:05.396 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 13.4866 ms
+2026-03-17 18:31:06.369 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 10.8778 ms
+2026-03-17 18:31:22.424 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 17013.9068 ms
+2026-03-17 18:31:22.555 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0401 ms
+2026-03-17 18:31:22.592 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 20.0003 ms
+2026-03-17 18:31:23.697 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0265 ms
+2026-03-17 18:31:23.747 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 19.7276 ms
+2026-03-17 18:31:34.283 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0304 ms
+2026-03-17 18:31:34.365 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 24.0109 ms
+2026-03-17 18:32:01.226 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0413 ms
+2026-03-17 18:32:01.324 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 83.1362 ms
+2026-03-17 18:32:13.470 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 188658.9893 ms
+2026-03-17 18:32:13.833 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0295 ms
+2026-03-17 18:32:13.854 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 15.9769 ms
+2026-03-17 18:32:14.808 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0260 ms
+2026-03-17 18:32:14.819 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 4.4669 ms
+2026-03-17 18:32:16.018 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 2139.5022 ms
+2026-03-17 18:32:16.158 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 35.6558 ms
+2026-03-17 18:32:16.983 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 797.5293 ms
+2026-03-17 18:32:17.134 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 21.7065 ms
+2026-03-17 18:32:18.029 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 58.5541 ms
+2026-03-17 18:32:43.173 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0416 ms
+2026-03-17 18:32:43.187 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.8300 ms
+2026-03-17 18:32:46.012 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 83403.1425 ms
+2026-03-17 18:32:46.411 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0280 ms
+2026-03-17 18:32:46.435 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 15.5640 ms
+2026-03-17 18:32:47.390 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0246 ms
+2026-03-17 18:32:47.441 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 8.8491 ms
+2026-03-17 18:33:00.852 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 14405.6167 ms
+2026-03-17 18:33:01.072 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0270 ms
+2026-03-17 18:33:01.183 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 14.1454 ms
+2026-03-17 18:33:02.259 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0249 ms
+2026-03-17 18:33:02.341 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 8.6680 ms
+2026-03-17 18:33:06.216 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 49056.3309 ms
+2026-03-17 18:33:06.348 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0341 ms
+2026-03-17 18:33:06.369 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 12.5918 ms
+2026-03-17 18:33:07.273 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0275 ms
+2026-03-17 18:33:07.337 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 12.8729 ms
+2026-03-17 18:34:25.798 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0490 ms
+2026-03-17 18:34:26.805 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0336 ms
+2026-03-17 18:34:27.154 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 33.2367 ms
+2026-03-17 18:34:27.204 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 16.6632 ms
+2026-03-17 18:34:27.946 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 81.3148 ms
+2026-03-17 18:34:30.379 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.9617 ms
+2026-03-17 18:34:34.026 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.1559 ms
+2026-03-17 18:34:34.039 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 8.8074 ms
+2026-03-17 18:34:34.411 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.0033 ms
+2026-03-17 18:34:44.113 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0271 ms
+2026-03-17 18:34:44.129 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 7.5959 ms
+2026-03-17 18:34:44.528 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 2.3253 ms
+2026-03-17 18:35:07.994 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 126798.8242 ms
+2026-03-17 18:35:08.112 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0424 ms
+2026-03-17 18:35:08.131 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 6.7408 ms
+2026-03-17 18:35:08.929 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0246 ms
+2026-03-17 18:35:08.953 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 10.7688 ms
+2026-03-17 18:35:12.225 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 4078.4097 ms
+2026-03-17 18:35:12.343 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 14.2842 ms
+2026-03-17 18:35:13.129 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 14.1239 ms
+2026-03-17 18:35:15.437 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0570 ms
+2026-03-17 18:35:15.450 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 7.1544 ms
+2026-03-17 18:35:15.772 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.3356 ms
+2026-03-17 18:35:17.814 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0394 ms
+2026-03-17 18:35:17.828 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 7.6832 ms
+2026-03-17 18:35:18.100 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 5.1241 ms
+2026-03-17 18:35:25.774 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0493 ms
+2026-03-17 18:35:25.808 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 4.5354 ms
+2026-03-17 18:35:34.603 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 22253.8077 ms
+2026-03-17 18:35:34.736 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 1.7563 ms
+2026-03-17 18:35:34.749 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 7.5122 ms
+2026-03-17 18:35:34.984 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 9.4792 ms
+2026-03-17 18:35:35.127 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 7.6297 ms
+2026-03-17 18:35:36.327 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0316 ms
+2026-03-17 18:35:36.371 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 38.4439 ms
+2026-03-17 18:35:38.219 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 3080.5307 ms
+2026-03-17 18:35:38.380 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 48.6077 ms
+2026-03-17 18:35:38.513 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 21.6911 ms
+2026-03-17 18:35:39.481 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 13.7603 ms
+2026-03-17 18:36:11.310 +05:30 [INF] HTTP GET /hubs/videocall responded 101 in 184926.6696 ms
+2026-03-17 18:36:11.655 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002 responded 204 in 0.0401 ms
+2026-03-17 18:36:11.673 +05:30 [INF] HTTP GET /api/Meeting/1002 responded 200 in 9.3858 ms
+2026-03-17 18:36:12.551 +05:30 [INF] HTTP OPTIONS /api/Chat/meeting/1002 responded 204 in 0.0263 ms
+2026-03-17 18:36:12.591 +05:30 [INF] HTTP GET /api/Chat/meeting/1002 responded 200 in 7.3417 ms
+2026-03-17 18:36:28.593 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0361 ms
+2026-03-17 18:36:28.609 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 9.7294 ms
+2026-03-17 18:36:29.067 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.5534 ms
+2026-03-17 18:36:32.790 +05:30 [INF] HTTP OPTIONS /api/Meeting/1002/media-state responded 204 in 0.0359 ms
+2026-03-17 18:36:32.797 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 2.8686 ms
+2026-03-17 18:36:33.113 +05:30 [INF] HTTP PUT /api/Meeting/1002/media-state responded 200 in 3.1203 ms

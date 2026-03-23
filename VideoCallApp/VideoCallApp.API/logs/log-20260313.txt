@@ -1,0 +1,44 @@
+2026-03-13 14:12:35.973 +05:30 [INF] Database migrations applied successfully
+2026-03-13 14:12:37.404 +05:30 [INF] Now listening on: https://localhost:7208
+2026-03-13 14:12:37.437 +05:30 [INF] Now listening on: http://localhost:5295
+2026-03-13 14:12:37.575 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-13 14:12:37.581 +05:30 [INF] Hosting environment: Development
+2026-03-13 14:12:37.593 +05:30 [INF] Content root path: E:\Bhavik\Google-meet-clone\VideoCallApp\VideoCallApp.API
+2026-03-13 14:13:27.411 +05:30 [INF] HTTP GET /WeatherForecast responded 200 in 1608.3413 ms
+2026-03-13 14:16:37.357 +05:30 [INF] HTTP POST /api/Auth/register responded 200 in 1239.3621 ms
+2026-03-13 14:18:04.206 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 335.3124 ms
+2026-03-13 14:28:53.843 +05:30 [INF] HTTP POST /api/Auth/register responded 200 in 435115.4868 ms
+2026-03-13 14:33:30.413 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 215763.3025 ms
+2026-03-13 14:36:41.665 +05:30 [INF] HTTP POST /api/Meeting responded 400 in 121.9995 ms
+2026-03-13 14:38:59.683 +05:30 [INF] HTTP POST /api/Meeting responded 400 in 25.4124 ms
+2026-03-13 14:44:32.703 +05:30 [INF] HTTP POST /api/Meeting responded 200 in 236.0476 ms
+2026-03-13 14:45:41.750 +05:30 [INF] HTTP GET /api/Meeting/my-meetings responded 200 in 531.6957 ms
+2026-03-13 14:52:01.667 +05:30 [INF] HTTP GET /api/Meeting/code/TGD8J90E responded 200 in 90.6170 ms
+2026-03-13 15:21:54.823 +05:30 [INF] Database migrations applied successfully
+2026-03-13 15:22:27.343 +05:30 [INF] Now listening on: https://localhost:7208
+2026-03-13 15:22:27.347 +05:30 [INF] Now listening on: http://localhost:5295
+2026-03-13 15:22:27.401 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-13 15:22:27.402 +05:30 [INF] Hosting environment: Development
+2026-03-13 15:22:27.403 +05:30 [INF] Content root path: E:\Bhavik\Google-meet-clone\VideoCallApp\VideoCallApp.API
+2026-03-13 15:23:19.440 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 1055.4099 ms
+2026-03-13 15:24:40.390 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 235.5483 ms
+2026-03-13 15:25:26.284 +05:30 [INF] HTTP POST /api/Meeting/join responded 200 in 350.6003 ms
+2026-03-13 15:27:26.639 +05:30 [INF] HTTP POST /api/Meeting/2/leave responded 400 in 50.2388 ms
+2026-03-13 15:27:38.686 +05:30 [INF] HTTP POST /api/Meeting/1/leave responded 200 in 27.0031 ms
+2026-03-13 15:28:56.261 +05:30 [INF] HTTP GET /api/Meeting/1/participants responded 200 in 45.9471 ms
+2026-03-13 15:29:58.629 +05:30 [INF] HTTP POST /api/Meeting/1/end responded 400 in 32.4127 ms
+2026-03-13 15:30:22.276 +05:30 [INF] HTTP POST /api/Meeting/1/end responded 400 in 21.6363 ms
+2026-03-13 15:30:26.965 +05:30 [INF] HTTP POST /api/Meeting/2/end responded 400 in 8.7122 ms
+2026-03-13 15:31:45.458 +05:30 [INF] HTTP POST /api/Meeting/2/end responded 400 in 8.8062 ms
+2026-03-13 15:32:01.025 +05:30 [INF] HTTP POST /api/Meeting/1/end responded 400 in 29.0528 ms
+2026-03-13 16:01:15.592 +05:30 [INF] HTTP POST /api/Meeting responded 400 in 24467.6001 ms
+2026-03-13 16:05:50.865 +05:30 [INF] HTTP POST /api/Meeting responded 200 in 202779.7095 ms
+2026-03-13 17:25:49.607 +05:30 [INF] Database migrations applied successfully
+2026-03-13 17:25:51.096 +05:30 [INF] Now listening on: https://localhost:7208
+2026-03-13 17:25:51.113 +05:30 [INF] Now listening on: http://localhost:5295
+2026-03-13 17:25:51.205 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-13 17:25:51.207 +05:30 [INF] Hosting environment: Development
+2026-03-13 17:25:51.208 +05:30 [INF] Content root path: E:\Bhavik\Google-meet-clone\VideoCallApp\VideoCallApp.API
+2026-03-13 17:31:03.187 +05:30 [INF] HTTP POST /api/Auth/login responded 401 in 1384.1792 ms
+2026-03-13 17:31:42.920 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 788.9219 ms
+2026-03-13 17:49:18.620 +05:30 [INF] HTTP POST /api/Auth/login responded 200 in 96714.1657 ms

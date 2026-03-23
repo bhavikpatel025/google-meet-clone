@@ -1,0 +1,12 @@
+<div class="dialog-shell">
+  <h2 mat-dialog-title>End meeting for everyone?</h2>
+
+  <mat-dialog-content>
+    <p>This will remove all participants from the meeting.</p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" class="cancel-button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button type="button" class="end-button" (click)="confirm()">End Meeting</button>
+  </mat-dialog-actions>
+</div>

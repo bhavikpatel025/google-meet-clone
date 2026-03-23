@@ -1,0 +1,77 @@
+<div class="join-meeting-container">
+  <mat-card class="join-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h1>Join Meeting</h1>
+      </mat-card-title>
+      <mat-card-subtitle>Enter the meeting code to join</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="joinForm" (ngSubmit)="onSubmit()">
+        <!-- Meeting Code Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Meeting Code</mat-label>
+          <input 
+            matInput 
+            type="text" 
+            formControlName="meetingCode"
+            placeholder="Enter 8-character code"
+            maxlength="8"
+            (input)="formatMeetingCode()"
+            autocomplete="off"
+            style="text-transform: uppercase; letter-spacing: 2px; font-size: 18px;">
+          <mat-icon matPrefix>meeting_room</mat-icon>
+          <mat-error *ngIf="joinForm.get('meetingCode')?.invalid">
+            {{ getErrorMessage() }}
+          </mat-error>
+          <mat-hint>Example: ABC12345</mat-hint>
+        </mat-form-field>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Join Button -->
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="submit"
+          class="full-width join-button"
+          [disabled]="loading || joinForm.invalid">
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!loading">video_call</mat-icon>
+          <span *ngIf="!loading">Join Meeting</span>
+        </button>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span>OR</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button 
+            mat-button 
+            type="button"
+            class="full-width"
+            routerLink="/create-meeting">
+            <mat-icon>add_circle</mat-icon>
+            Create New Meeting
+          </button>
+          
+          <button 
+            mat-button 
+            type="button"
+            class="full-width"
+            routerLink="/my-meetings">
+            <mat-icon>list</mat-icon>
+            My Meetings
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

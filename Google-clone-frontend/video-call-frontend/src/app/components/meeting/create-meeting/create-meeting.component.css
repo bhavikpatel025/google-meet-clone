@@ -1,0 +1,161 @@
+.create-meeting-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.meeting-card {
+  width: 100%;
+  max-width: 600px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+mat-card-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+mat-card-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.form-hint {
+  margin: -4px 0 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.success-section {
+  text-align: center;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  margin-bottom: 30px;
+  background-color: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  color: #2e7d32;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.success-message mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.meeting-code-section {
+  margin-top: 20px;
+}
+
+.meeting-code-section h3 {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.meeting-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.code {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #667eea;
+  font-family: 'Courier New', monospace;
+}
+
+.code-hint {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 30px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-buttons button {
+  min-width: 150px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  font-size: 14px;
+}
+
+.error-message mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.submit-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.submit-button mat-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.back-button {
+  color: #666;
+}
+
+mat-form-field {
+  font-size: 14px;
+}
+
+mat-icon[matPrefix] {
+  margin-right: 12px;
+  color: #999;
+}

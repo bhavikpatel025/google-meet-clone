@@ -1,0 +1,122 @@
+.join-meeting-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.join-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+mat-card-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+mat-card-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  margin-bottom: 20px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  font-size: 14px;
+}
+
+.error-message mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.join-button {
+  height: 56px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.join-button mat-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.join-button mat-icon {
+  margin-right: 8px;
+}
+
+.divider {
+  text-align: center;
+  margin: 30px 0;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.divider span {
+  position: relative;
+  background-color: white;
+  padding: 0 15px;
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-buttons button {
+  height: 48px;
+  font-size: 15px;
+}
+
+.action-buttons button mat-icon {
+  margin-right: 8px;
+}
+
+mat-icon[matPrefix] {
+  margin-right: 12px;
+  color: #999;
+}

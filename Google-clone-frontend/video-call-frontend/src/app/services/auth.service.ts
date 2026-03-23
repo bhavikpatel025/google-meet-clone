@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthResponse, LoginRequest, RegisterRequest, User, ApiResponse } from '../models/auth.models';
+import { ApiResponse, AuthResponse, LoginRequest, ProfileImageResponse, RegisterRequest, User } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -59,12 +59,66 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
+  uploadProfileImage(file: File): Observable<ApiResponse<ProfileImageResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<ApiResponse<ProfileImageResponse>>(`${environment.apiUrl}/users/upload-profile-image`, formData)
+      .pipe(
+        tap(response => {
+          if (response.success) {
+            this.updateCurrentUserProfile(response.data?.profileImageUrl ?? null);
+          }
+        })
+      );
+  }
+
+  removeProfileImage(): Observable<ApiResponse<ProfileImageResponse>> {
+    return this.http.delete<ApiResponse<ProfileImageResponse>>(`${environment.apiUrl}/users/profile-image`)
+      .pipe(
+        tap(response => {
+          if (response.success) {
+            this.updateCurrentUserProfile(null);
+          }
+        })
+      );
+  }
+
+  updateCurrentUserProfile(profilePictureUrl: string | null): void {
+    const currentUser = this.currentUserValue;
+    if (!currentUser) {
+      return;
+    }
+
+    const updatedUser: User = {
+      ...currentUser,
+      profilePictureUrl
+    };
+
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    this.currentUserSubject.next(updatedUser);
+  }
+
+  resolveAssetUrl(path?: string | null): string | null {
+    if (!path) {
+      return null;
+    }
+
+    if (/^https?:\/\//i.test(path)) {
+      return path;
+    }
+
+    const apiOrigin = environment.apiUrl.replace(/\/api$/i, '');
+    return `${apiOrigin}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+
   private saveAuthData(data: AuthResponse): void {
     const user: User = {
       userId: data.userId,
       email: data.email,
       firstName: data.firstName,
-      lastName: data.lastName
+      lastName: data.lastName,
+      profilePictureUrl: data.profilePictureUrl ?? null
     };
     
     localStorage.setItem('currentUser', JSON.stringify(user));

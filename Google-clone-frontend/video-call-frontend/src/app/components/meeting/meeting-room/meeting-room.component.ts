@@ -36,6 +36,7 @@ interface RemoteStream {
 interface ParticipantTile {
   userId: string;
   userName: string;
+  profilePictureUrl?: string | null;
   stream?: MediaStream;
   isCameraOn: boolean;
   isMicrophoneOn: boolean;
@@ -602,6 +603,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     const localTile: ParticipantTile = {
       userId: this.currentUserId,
       userName: `You${this.isHost ? ' (Host)' : ''}`,
+      profilePictureUrl: this.authService.currentUserValue?.profilePictureUrl ?? null,
       stream: this.localDisplayStream,
       isCameraOn: this.isCameraOn,
       isMicrophoneOn: this.isMicrophoneOn,
@@ -616,6 +618,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       return {
         userId: participant.userId,
         userName: `${participant.userName}${participant.role === 'Host' ? ' (Host)' : ''}`,
+        profilePictureUrl: participant.profilePictureUrl ?? null,
         stream: remoteStream?.stream,
         isCameraOn: remoteStream?.isCameraOn ?? participant.isCameraOn,
         isMicrophoneOn: remoteStream?.isMicrophoneOn ?? participant.isMicrophoneOn,
@@ -709,6 +712,31 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   formatTime(date: Date): string {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  shouldShowVideo(tile: ParticipantTile): boolean {
+    if (tile.isScreenSharing) {
+      return !!tile.stream;
+    }
+
+    return !!tile.stream && tile.isCameraOn;
+  }
+
+  getAvatarImageUrl(profilePictureUrl?: string | null): string | null {
+    return this.authService.resolveAssetUrl(profilePictureUrl ?? null);
+  }
+
+  getAvatarInitial(name: string): string {
+    return name.trim().charAt(0).toUpperCase() || 'U';
+  }
+
+  get currentUserName(): string {
+    const currentUser = this.authService.currentUserValue;
+    return `${currentUser?.firstName ?? ''} ${currentUser?.lastName ?? ''}`.trim() || 'You';
+  }
+
+  get currentUserProfileImageUrl(): string | null {
+    return this.authService.resolveAssetUrl(this.authService.currentUserValue?.profilePictureUrl ?? null);
   }
 
   private upsertParticipant(participant: Participant): void {

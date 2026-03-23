@@ -34,6 +34,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src =>
                 src.User.FirstName + " " + src.User.LastName))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.User.ProfilePictureUrl))
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
 
         // Chat mappings

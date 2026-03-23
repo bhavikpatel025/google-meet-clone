@@ -24,4 +24,8 @@
     <ProjectReference Include="..\VideoCallApp.Persistence\VideoCallApp.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\profile\" />
+  </ItemGroup>
+
 </Project>

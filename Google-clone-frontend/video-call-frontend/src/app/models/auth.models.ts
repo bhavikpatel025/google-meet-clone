@@ -16,6 +16,7 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
+  profilePictureUrl?: string | null;
   token: string;
   expiration: Date;
 }
@@ -25,6 +26,11 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  profilePictureUrl?: string | null;
+}
+
+export interface ProfileImageResponse {
+  profileImageUrl?: string | null;
 }
 
 export interface ApiResponse<T> {

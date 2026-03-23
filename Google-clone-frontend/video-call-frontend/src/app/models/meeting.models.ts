@@ -23,6 +23,7 @@ export interface Participant {
   userId: string;
   userName: string;
   email: string;
+  profilePictureUrl?: string | null;
   isCameraOn: boolean;
   isMicrophoneOn: boolean;
   isScreenSharing: boolean;

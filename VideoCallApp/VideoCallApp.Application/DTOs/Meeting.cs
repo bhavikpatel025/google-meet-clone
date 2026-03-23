@@ -33,6 +33,7 @@ public class ParticipantDto
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? ProfilePictureUrl { get; set; }
     public bool IsCameraOn { get; set; }
     public bool IsMicrophoneOn { get; set; }
     public bool IsScreenSharing { get; set; }

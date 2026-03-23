@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { MeetingService } from '../../../services/meeting.service';
 import { StartMeetingDialogComponent } from '../start-meeting-dialog/start-meeting-dialog.component';
 import { JoinMeetingDialogComponent } from '../join-meeting-dialog/join-meeting-dialog.component';
-import { firstValueFrom } from 'rxjs';
-import { MeetingService } from '../../../services/meeting.service';
+import { ProfileSettingsDialogComponent } from '../../shared/profile-settings-dialog/profile-settings-dialog.component';
 
 @Component({
   selector: 'app-my-meetings',
@@ -58,7 +59,7 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openStartMeetingModal(): Promise<void> {
+  openStartMeetingModal(): void {
     this.dialog.open(StartMeetingDialogComponent, {
       width: 'min(100vw - 32px, 520px)',
       maxWidth: '520px',
@@ -85,6 +86,15 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
     }
 
     this.joinMeeting(result.meetingCode);
+  }
+
+  openProfileSettings(): void {
+    this.dialog.open(ProfileSettingsDialogComponent, {
+      width: 'min(100vw - 32px, 460px)',
+      maxWidth: '460px',
+      panelClass: 'meeting-action-dialog-panel',
+      autoFocus: false
+    });
   }
 
   joinMeeting(meetingCodeInput: string): void {
@@ -116,6 +126,14 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  get currentUserProfileImageUrl(): string | null {
+    return this.authService.resolveAssetUrl(this.authService.currentUserValue?.profilePictureUrl ?? null);
+  }
+
+  get currentUserInitial(): string {
+    return this.currentUserName.charAt(0).toUpperCase() || 'U';
   }
 
   private updateCurrentDateTimeLabel(): void {

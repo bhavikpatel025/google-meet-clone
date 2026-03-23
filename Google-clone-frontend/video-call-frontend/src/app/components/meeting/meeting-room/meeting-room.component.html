@@ -19,13 +19,25 @@
       <ng-container *ngIf="screenShareTile; else standardGrid">
         <div class="screen-share-layout">
           <div class="video-container main-screen">
-            <video
-              [srcObject]="screenShareTile.stream"
-              autoplay
-              playsinline
-              [muted]="screenShareTile.isLocal"
-              class="video-element screen-share-video">
-            </video>
+            <ng-container *ngIf="shouldShowVideo(screenShareTile); else screenShareAvatar">
+              <video
+                [srcObject]="screenShareTile.stream"
+                autoplay
+                playsinline
+                [muted]="screenShareTile.isLocal"
+                class="video-element screen-share-video">
+              </video>
+            </ng-container>
+            <ng-template #screenShareAvatar>
+              <div class="tile-avatar-shell">
+                <ng-container *ngIf="getAvatarImageUrl(screenShareTile.profilePictureUrl); else screenShareFallback">
+                  <img [src]="getAvatarImageUrl(screenShareTile.profilePictureUrl)!" [alt]="screenShareTile.userName" class="tile-avatar-image">
+                </ng-container>
+                <ng-template #screenShareFallback>
+                  <div class="tile-avatar-fallback">{{ getAvatarInitial(screenShareTile.userName) }}</div>
+                </ng-template>
+              </div>
+            </ng-template>
             <div class="video-overlay">
               <span class="participant-name">{{ screenShareTile.userName }}</span>
               <div class="video-status">
@@ -38,13 +50,25 @@
 
           <div class="secondary-grid" [ngClass]="{'single-tile': secondaryTiles.length === 1}">
             <div class="video-container secondary-tile" *ngFor="let tile of secondaryTiles; trackBy: trackTile">
-              <video
-                [srcObject]="tile.stream"
-                autoplay
-                playsinline
-                [muted]="tile.isLocal"
-                class="video-element">
-              </video>
+              <ng-container *ngIf="shouldShowVideo(tile); else secondaryAvatar">
+                <video
+                  [srcObject]="tile.stream"
+                  autoplay
+                  playsinline
+                  [muted]="tile.isLocal"
+                  class="video-element">
+                </video>
+              </ng-container>
+              <ng-template #secondaryAvatar>
+                <div class="tile-avatar-shell">
+                  <ng-container *ngIf="getAvatarImageUrl(tile.profilePictureUrl); else secondaryFallback">
+                    <img [src]="getAvatarImageUrl(tile.profilePictureUrl)!" [alt]="tile.userName" class="tile-avatar-image">
+                  </ng-container>
+                  <ng-template #secondaryFallback>
+                    <div class="tile-avatar-fallback">{{ getAvatarInitial(tile.userName) }}</div>
+                  </ng-template>
+                </div>
+              </ng-template>
               <div class="video-overlay">
                 <span class="participant-name">{{ tile.userName }}</span>
                 <div class="video-status">
@@ -62,13 +86,25 @@
           <div class="row g-3 justify-content-center align-items-center h-100 video-grid-row">
             <div [class]="getVideoTileColumnClasses()" *ngFor="let tile of allParticipantTiles; trackBy: trackTile">
               <div class="video-container participant-tile bootstrap-video-tile">
-                <video
-                  [srcObject]="tile.stream"
-                  autoplay
-                  playsinline
-                  [muted]="tile.isLocal"
-                  class="video-element">
-                </video>
+                <ng-container *ngIf="shouldShowVideo(tile); else tileAvatar">
+                  <video
+                    [srcObject]="tile.stream"
+                    autoplay
+                    playsinline
+                    [muted]="tile.isLocal"
+                    class="video-element">
+                  </video>
+                </ng-container>
+                <ng-template #tileAvatar>
+                  <div class="tile-avatar-shell">
+                    <ng-container *ngIf="getAvatarImageUrl(tile.profilePictureUrl); else tileFallback">
+                      <img [src]="getAvatarImageUrl(tile.profilePictureUrl)!" [alt]="tile.userName" class="tile-avatar-image">
+                    </ng-container>
+                    <ng-template #tileFallback>
+                      <div class="tile-avatar-fallback">{{ getAvatarInitial(tile.userName) }}</div>
+                    </ng-template>
+                  </div>
+                </ng-template>
                 <div class="video-overlay">
                   <span class="participant-name">{{ tile.userName }}</span>
                   <div class="video-status">
@@ -106,7 +142,12 @@
         <div class="participant-row current-user">
           <div class="participant-main">
             <div class="participant-avatar">
-              <mat-icon>person</mat-icon>
+              <ng-container *ngIf="currentUserProfileImageUrl; else currentUserFallback">
+                <img [src]="currentUserProfileImageUrl" [alt]="currentUserName" class="participant-avatar-image">
+              </ng-container>
+              <ng-template #currentUserFallback>
+                <span class="participant-avatar-letter">{{ getAvatarInitial(currentUserName) }}</span>
+              </ng-template>
             </div>
             <div class="participant-meta">
               <div class="participant-line">
@@ -128,7 +169,12 @@
         <div class="participant-row" *ngFor="let participant of filteredParticipants">
           <div class="participant-main">
             <div class="participant-avatar remote-avatar">
-              <mat-icon>person</mat-icon>
+              <ng-container *ngIf="getAvatarImageUrl(participant.profilePictureUrl); else participantFallback">
+                <img [src]="getAvatarImageUrl(participant.profilePictureUrl)!" [alt]="participant.userName" class="participant-avatar-image">
+              </ng-container>
+              <ng-template #participantFallback>
+                <span class="participant-avatar-letter">{{ getAvatarInitial(participant.userName) }}</span>
+              </ng-template>
             </div>
             <div class="participant-meta">
               <div class="participant-line">

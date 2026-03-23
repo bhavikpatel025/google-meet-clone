@@ -1,0 +1,42 @@
+<div class="profile-dialog">
+  <h2 mat-dialog-title>Profile Settings</h2>
+
+  <mat-dialog-content>
+    <div class="profile-preview">
+      <ng-container *ngIf="profileImageUrl; else initialsAvatar">
+        <img [src]="profileImageUrl" [alt]="currentUserName" class="profile-image">
+      </ng-container>
+      <ng-template #initialsAvatar>
+        <div class="profile-initials">{{ initials }}</div>
+      </ng-template>
+    </div>
+
+    <div class="profile-copy">
+      <div class="profile-name">{{ currentUserName }}</div>
+      <p>Upload a profile photo to appear when your camera is off during meetings.</p>
+    </div>
+
+    <input #fileInput type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" hidden (change)="onFileSelected($event)">
+
+    <div class="profile-actions">
+      <button mat-flat-button color="primary" type="button" (click)="fileInput.click()" [disabled]="loading">
+        <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+        <mat-icon *ngIf="!loading">{{ profileImageUrl ? 'photo_camera' : 'upload' }}</mat-icon>
+        <span>{{ profileImageUrl ? 'Change Picture' : 'Upload Picture' }}</span>
+      </button>
+
+      <button mat-stroked-button type="button" (click)="removeProfileImage()" [disabled]="loading || !profileImageUrl">
+        <mat-icon>delete</mat-icon>
+        <span>Remove</span>
+      </button>
+    </div>
+
+    <p class="profile-hint">Supported formats: JPG, JPEG, PNG. Maximum size: 2MB.</p>
+    <p class="success-copy" *ngIf="successMessage">{{ successMessage }}</p>
+    <p class="error-copy" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close type="button">Close</button>
+  </mat-dialog-actions>
+</div>

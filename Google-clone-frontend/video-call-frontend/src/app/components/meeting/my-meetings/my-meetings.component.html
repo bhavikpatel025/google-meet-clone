@@ -17,8 +17,13 @@
     <div class="header-right">
       <span class="header-time">{{ currentDateTimeLabel }}</span>
       <span class="welcome-copy">{{ currentUserName }}</span>
-      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Account menu">
-        <mat-icon>account_circle</mat-icon>
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Account menu" class="profile-trigger">
+        <ng-container *ngIf="currentUserProfileImageUrl; else defaultHeaderAvatar">
+          <img [src]="currentUserProfileImageUrl" [alt]="currentUserName" class="header-avatar-image">
+        </ng-container>
+        <ng-template #defaultHeaderAvatar>
+          <span class="header-avatar-fallback">{{ currentUserInitial }}</span>
+        </ng-template>
       </button>
     </div>
   </header>
@@ -88,6 +93,10 @@
 </div>
 
 <mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="openProfileSettings()">
+    <mat-icon>manage_accounts</mat-icon>
+    <span>Profile settings</span>
+  </button>
   <button mat-menu-item (click)="logout()">
     <mat-icon>logout</mat-icon>
     <span>Logout</span>

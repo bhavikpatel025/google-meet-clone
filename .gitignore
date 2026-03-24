@@ -12,7 +12,9 @@ obj/
 Debug/
 Release/
 
+# ===============================
 # Logs
+# ===============================
 logs/
 *.log
 
@@ -24,6 +26,12 @@ logs/
 .env.*.local
 appsettings.Development.json
 appsettings.Local.json
+
+# ===============================
+# User Uploaded Files (IMPORTANT 🔥)
+# ===============================
+wwwroot/profile/*
+!wwwroot/profile/.gitkeep
 
 # ===============================
 # Angular / Node

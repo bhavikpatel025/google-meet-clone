@@ -16,7 +16,7 @@
 
     <div class="header-right">
       <span class="header-time">{{ currentDateTimeLabel }}</span>
-      <span class="welcome-copy">{{ currentUserName }}</span>
+      <!-- <span class="welcome-copy">{{ currentUserName }}</span> -->
       <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Account menu" class="profile-trigger">
         <ng-container *ngIf="currentUserProfileImageUrl; else defaultHeaderAvatar">
           <img [src]="currentUserProfileImageUrl" [alt]="currentUserName" class="header-avatar-image">

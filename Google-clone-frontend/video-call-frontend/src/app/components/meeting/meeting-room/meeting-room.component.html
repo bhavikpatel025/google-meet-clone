@@ -211,12 +211,33 @@
       </div>
       
       <div class="chat-messages">
-        <div *ngFor="let message of chatMessages" class="chat-message" [class.own-message]="message.senderId === currentUserId">
-          <div class="message-header">
-            <span class="sender-name">{{ message.senderName }}</span>
-            <span class="message-time">{{ formatTime(message.sentAt) }}</span>
+        <div
+          *ngFor="let message of chatMessages"
+          class="chat-message"
+          [class.sender-message]="message.senderId === currentUserId"
+          [class.receiver-message]="message.senderId !== currentUserId">
+          <div class="receiver-layout" *ngIf="message.senderId !== currentUserId; else senderMessage">
+            <div class="chat-avatar">
+              <ng-container *ngIf="getChatAvatarUrl(message); else chatAvatarFallback">
+                <img [src]="getChatAvatarUrl(message)!" [alt]="message.senderName" class="chat-avatar-image">
+              </ng-container>
+              <ng-template #chatAvatarFallback>
+                <span class="chat-avatar-letter">{{ getChatAvatarInitial(message) }}</span>
+              </ng-template>
+            </div>
+            <div class="receiver-content">
+              <div class="receiver-header">
+                <span class="sender-name">{{ message.senderName }}</span>
+                <span class="message-time">{{ formatTime(message.sentAt) }}</span>
+              </div>
+              <div class="message-content">{{ message.message }}</div>
+            </div>
           </div>
-          <div class="message-content">{{ message.message }}</div>
+
+          <ng-template #senderMessage>
+            <div class="sender-time">{{ formatTime(message.sentAt) }}</div>
+            <div class="message-content">{{ message.message }}</div>
+          </ng-template>
         </div>
         
         <div *ngIf="chatMessages.length === 0" class="no-messages">

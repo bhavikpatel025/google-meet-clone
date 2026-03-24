@@ -730,6 +730,19 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     return name.trim().charAt(0).toUpperCase() || 'U';
   }
 
+  getChatAvatarUrl(message: ChatMessage): string | null {
+    if (message.senderId === this.currentUserId) {
+      return this.currentUserProfileImageUrl;
+    }
+
+    const participant = this.participants.find(currentParticipant => currentParticipant.userId === message.senderId);
+    return this.getAvatarImageUrl(participant?.profilePictureUrl ?? null);
+  }
+
+  getChatAvatarInitial(message: ChatMessage): string {
+    return this.getAvatarInitial(message.senderName);
+  }
+
   get currentUserName(): string {
     const currentUser = this.authService.currentUserValue;
     return `${currentUser?.firstName ?? ''} ${currentUser?.lastName ?? ''}`.trim() || 'You';

@@ -55,6 +55,17 @@ interface RaisedHandEntry {
   handRaisedAt?: Date | string | null;
 }
 
+interface ContributorEntry {
+  userId: string;
+  userName: string;
+  profilePictureUrl?: string | null;
+  isLocal: boolean;
+  isHost: boolean;
+  isCameraOn: boolean;
+  isMicrophoneOn: boolean;
+  isScreenSharing: boolean;
+}
+
 @Component({
   selector: 'app-meeting-room',
   standalone: true,
@@ -98,6 +109,8 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   unreadMessages = 0;
   participantSearchTerm = '';
   currentTimeLabel = '';
+  showRaisedHandsSection = true;
+  showContributorsSection = true;
   isHandRaised = false;
   localHandRaisedAt?: Date | string | null;
   activeReactions: MeetingReaction[] = [];
@@ -760,6 +773,47 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     return entries.sort((left, right) => this.getHandRaisedTimestamp(left.handRaisedAt) - this.getHandRaisedTimestamp(right.handRaisedAt));
   }
 
+  get contributors(): ContributorEntry[] {
+    const entries: ContributorEntry[] = [];
+
+    entries.push({
+      userId: this.currentUserId,
+      userName: 'You',
+      profilePictureUrl: this.authService.currentUserValue?.profilePictureUrl ?? null,
+      isLocal: true,
+      isHost: this.isHost,
+      isCameraOn: this.isCameraOn,
+      isMicrophoneOn: this.isMicrophoneOn,
+      isScreenSharing: this.isScreenSharing
+    });
+
+    this.participants.forEach(participant => {
+      entries.push({
+        userId: participant.userId,
+        userName: participant.userName,
+        profilePictureUrl: participant.profilePictureUrl ?? null,
+        isLocal: false,
+        isHost: participant.role === 'Host',
+        isCameraOn: participant.isCameraOn,
+        isMicrophoneOn: participant.isMicrophoneOn,
+        isScreenSharing: participant.isScreenSharing
+      });
+    });
+
+    return entries;
+  }
+
+  get filteredContributors(): ContributorEntry[] {
+    const searchTerm = this.participantSearchTerm.trim().toLowerCase();
+    if (!searchTerm) {
+      return this.contributors;
+    }
+
+    return this.contributors.filter(contributor =>
+      contributor.userName.toLowerCase().includes(searchTerm)
+    );
+  }
+
   get participantGridClass(): string {
     const count = this.allParticipantTiles.length;
 
@@ -784,6 +838,20 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     }
 
     return 'layout-auto';
+  }
+
+  get videoGridLayoutClass(): string {
+    const count = this.allParticipantTiles.length;
+
+    if (count === 3) {
+      return 'layout-quad has-three';
+    }
+
+    if (count === 5) {
+      return 'layout-hex has-five';
+    }
+
+    return this.participantGridClass;
   }
 
   getVideoTileColumnClasses(): string {
@@ -826,6 +894,18 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   trackReaction(_: number, reaction: MeetingReaction): string {
     return reaction.id;
+  }
+
+  trackContributor(_: number, contributor: ContributorEntry): string {
+    return contributor.userId;
+  }
+
+  toggleRaisedHandsSection(): void {
+    this.showRaisedHandsSection = !this.showRaisedHandsSection;
+  }
+
+  toggleContributorsSection(): void {
+    this.showContributorsSection = !this.showContributorsSection;
   }
 
   shouldShowVideo(tile: ParticipantTile): boolean {

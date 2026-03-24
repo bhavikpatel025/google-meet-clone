@@ -37,6 +37,8 @@ public class ParticipantDto
     public bool IsCameraOn { get; set; }
     public bool IsMicrophoneOn { get; set; }
     public bool IsScreenSharing { get; set; }
+    public bool IsHandRaised { get; set; }
+    public DateTime? HandRaisedAt { get; set; }
     public string Role { get; set; } = string.Empty;
     public DateTime JoinedAt { get; set; }
     public string? ConnectionId { get; set; }

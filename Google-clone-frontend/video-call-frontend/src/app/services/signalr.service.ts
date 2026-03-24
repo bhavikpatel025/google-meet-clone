@@ -3,7 +3,16 @@ import * as signalR from '@microsoft/signalr';
 import { HubConnection, HubConnectionState } from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Participant, ScreenShareState, WebRTCAnswer, WebRTCIceCandidate, WebRTCOffer } from '../models/meeting.models';
+import {
+  HandLowerEvent,
+  HandRaiseEvent,
+  MeetingReaction,
+  Participant,
+  ScreenShareState,
+  WebRTCAnswer,
+  WebRTCIceCandidate,
+  WebRTCOffer
+} from '../models/meeting.models';
 import { ChatMessage } from '../models/chat.models';
 
 @Injectable({
@@ -25,6 +34,10 @@ export class SignalrService {
   public screenShareState$ = new BehaviorSubject<ScreenShareState | null>(null);
   public meetingEnded$ = new Subject<boolean>();
   public reconnected$ = new Subject<void>();
+  public handRaised$ = new Subject<HandRaiseEvent>();
+  public handLowered$ = new Subject<HandLowerEvent>();
+  public allHandsLowered$ = new Subject<{ meetingId: number }>();
+  public reactionReceived$ = new Subject<MeetingReaction>();
 
   // WebRTC signaling observables
   public offerReceived$ = new Subject<WebRTCOffer>();
@@ -171,6 +184,40 @@ export class SignalrService {
       this.newMessage$.next(message);
     });
 
+    this.hubConnection.on('HandRaised', (data: HandRaiseEvent) => {
+      this.log('Hand raised', data);
+      this.patchParticipant(data.userId, {
+        isHandRaised: true,
+        handRaisedAt: data.handRaisedAt
+      });
+      this.handRaised$.next(data);
+    });
+
+    this.hubConnection.on('HandLowered', (data: HandLowerEvent) => {
+      this.log('Hand lowered', data);
+      this.patchParticipant(data.userId, {
+        isHandRaised: false,
+        handRaisedAt: null
+      });
+      this.handLowered$.next(data);
+    });
+
+    this.hubConnection.on('AllHandsLowered', (data: { meetingId: number }) => {
+      this.log('All hands lowered', data);
+      const participants = this.currentParticipants$.value.map(participant => ({
+        ...participant,
+        isHandRaised: false,
+        handRaisedAt: null
+      }));
+      this.setParticipants(participants);
+      this.allHandsLowered$.next(data);
+    });
+
+    this.hubConnection.on('ReactionSent', (reaction: MeetingReaction) => {
+      this.log('Reaction sent', reaction);
+      this.reactionReceived$.next(reaction);
+    });
+
     // Meeting ended
     this.hubConnection.on('MeetingEnded', () => {
       this.log('Meeting ended');
@@ -312,6 +359,30 @@ export class SignalrService {
   public async endMeeting(meetingId: number): Promise<void> {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       await this.invokeHub('EndMeeting', meetingId);
+    }
+  }
+
+  public async raiseHand(meetingId: number): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('RaiseHand', meetingId);
+    }
+  }
+
+  public async lowerHand(meetingId: number, userId: string): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('LowerHand', meetingId, userId);
+    }
+  }
+
+  public async lowerAllHands(meetingId: number): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('LowerAllHands', meetingId);
+    }
+  }
+
+  public async sendReaction(meetingId: number, reaction: string): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('SendReaction', meetingId, reaction);
     }
   }
 

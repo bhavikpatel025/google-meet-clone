@@ -19,6 +19,11 @@
       <ng-container *ngIf="screenShareTile; else standardGrid">
         <div class="screen-share-layout">
           <div class="video-container main-screen">
+            <div class="tile-reactions" *ngIf="getReactionsForTile(screenShareTile.userId).length > 0">
+              <div class="reaction-pill" *ngFor="let reaction of getReactionsForTile(screenShareTile.userId); trackBy: trackReaction">
+                {{ reaction.reaction }}
+              </div>
+            </div>
             <ng-container *ngIf="shouldShowVideo(screenShareTile); else screenShareAvatar">
               <video
                 [srcObject]="screenShareTile.stream"
@@ -50,6 +55,11 @@
 
           <div class="secondary-grid" [ngClass]="{'single-tile': secondaryTiles.length === 1}">
             <div class="video-container secondary-tile" *ngFor="let tile of secondaryTiles; trackBy: trackTile">
+              <div class="tile-reactions" *ngIf="getReactionsForTile(tile.userId).length > 0">
+                <div class="reaction-pill" *ngFor="let reaction of getReactionsForTile(tile.userId); trackBy: trackReaction">
+                  {{ reaction.reaction }}
+                </div>
+              </div>
               <ng-container *ngIf="shouldShowVideo(tile); else secondaryAvatar">
                 <video
                   [srcObject]="tile.stream"
@@ -72,6 +82,7 @@
               <div class="video-overlay">
                 <span class="participant-name">{{ tile.userName }}</span>
                 <div class="video-status">
+                  <mat-icon *ngIf="tile.isHandRaised" class="status-icon hand-status">front_hand</mat-icon>
                   <mat-icon *ngIf="!tile.isCameraOn && !tile.isScreenSharing" class="status-icon">videocam_off</mat-icon>
                   <mat-icon *ngIf="!tile.isMicrophoneOn" class="status-icon">mic_off</mat-icon>
                 </div>
@@ -86,6 +97,11 @@
           <div class="row g-3 justify-content-center align-items-center h-100 video-grid-row">
             <div [class]="getVideoTileColumnClasses()" *ngFor="let tile of allParticipantTiles; trackBy: trackTile">
               <div class="video-container participant-tile bootstrap-video-tile">
+                <div class="tile-reactions" *ngIf="getReactionsForTile(tile.userId).length > 0">
+                  <div class="reaction-pill" *ngFor="let reaction of getReactionsForTile(tile.userId); trackBy: trackReaction">
+                    {{ reaction.reaction }}
+                  </div>
+                </div>
                 <ng-container *ngIf="shouldShowVideo(tile); else tileAvatar">
                   <video
                     [srcObject]="tile.stream"
@@ -108,6 +124,7 @@
                 <div class="video-overlay">
                   <span class="participant-name">{{ tile.userName }}</span>
                   <div class="video-status">
+                    <mat-icon *ngIf="tile.isHandRaised" class="status-icon hand-status">front_hand</mat-icon>
                     <mat-icon *ngIf="!tile.isCameraOn && !tile.isScreenSharing" class="status-icon">videocam_off</mat-icon>
                     <mat-icon *ngIf="!tile.isMicrophoneOn" class="status-icon">mic_off</mat-icon>
                     <mat-icon *ngIf="tile.isScreenSharing" class="status-icon active-status">screen_share</mat-icon>
@@ -139,6 +156,41 @@
         </mat-form-field>
       </div>
       <div class="participants-list">
+        <div class="raised-hands-card" *ngIf="raisedHands.length > 0">
+          <div class="raised-hands-header">
+            <div>
+              <h4>Raised Hands ({{ raisedHands.length }})</h4>
+              <span>First raised, first shown</span>
+            </div>
+            <button mat-button class="lower-all-button" *ngIf="isHost" (click)="lowerAllHands()">Lower All</button>
+          </div>
+
+          <div class="raised-hand-row" *ngFor="let raisedHand of raisedHands">
+            <div class="participant-main">
+              <div class="participant-avatar" [class.remote-avatar]="!raisedHand.isLocal">
+                <ng-container *ngIf="getAvatarImageUrl(raisedHand.profilePictureUrl); else raisedHandFallback">
+                  <img [src]="getAvatarImageUrl(raisedHand.profilePictureUrl)!" [alt]="raisedHand.userName" class="participant-avatar-image">
+                </ng-container>
+                <ng-template #raisedHandFallback>
+                  <span class="participant-avatar-letter">{{ getAvatarInitial(raisedHand.userName) }}</span>
+                </ng-template>
+              </div>
+              <div class="participant-meta">
+                <div class="participant-line">
+                  <span class="participant-display-name">{{ raisedHand.userName }}</span>
+                  <span class="participant-badge self-badge" *ngIf="raisedHand.isLocal">You</span>
+                  <span class="participant-badge host-badge" *ngIf="raisedHand.isHost">Host</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="raised-hand-actions">
+              <mat-icon class="participant-icon hand-status">front_hand</mat-icon>
+              <button mat-button class="lower-hand-button" *ngIf="isHost || raisedHand.isLocal" (click)="lowerHand(raisedHand.userId)">Lower</button>
+            </div>
+          </div>
+        </div>
+
         <div class="participant-row current-user">
           <div class="participant-main">
             <div class="participant-avatar">
@@ -154,6 +206,7 @@
                 <span class="participant-display-name">You</span>
                 <span class="participant-badge self-badge">You</span>
                 <span class="participant-badge host-badge" *ngIf="isHost">Host</span>
+                <mat-icon *ngIf="isHandRaised" class="participant-icon hand-status">front_hand</mat-icon>
               </div>
               <div class="participant-subtitle">Connected on this device</div>
             </div>
@@ -180,6 +233,7 @@
               <div class="participant-line">
                 <span class="participant-display-name">{{ participant.userName }}</span>
                 <span class="participant-badge host-badge" *ngIf="participant.role === 'Host'">Host</span>
+                <mat-icon *ngIf="participant.isHandRaised" class="participant-icon hand-status">front_hand</mat-icon>
               </div>
               <div class="participant-subtitle">
                 {{ participant.isScreenSharing ? 'Presenting now' : 'In meeting' }}
@@ -281,6 +335,14 @@
         <mat-icon>{{ isScreenSharing ? 'stop_screen_share' : 'screen_share' }}</mat-icon>
       </button>
 
+      <button mat-mini-fab [color]="showReactionPicker ? 'accent' : 'primary'" (click)="toggleReactionPicker()" matTooltip="Reactions">
+        <mat-icon>mood</mat-icon>
+      </button>
+
+      <button mat-mini-fab [color]="isHandRaised ? 'accent' : 'primary'" (click)="toggleRaiseHand()" matTooltip="{{ isHandRaised ? 'Lower hand' : 'Raise hand' }}">
+        <mat-icon>front_hand</mat-icon>
+      </button>
+
       <!-- Leave Meeting -->
       <button mat-mini-fab color="warn" (click)="leaveMeeting()" matTooltip="Leave meeting">
         <mat-icon>call_end</mat-icon>
@@ -289,6 +351,12 @@
       <!-- End Meeting (Host Only) -->
       <button *ngIf="isHost" mat-mini-fab style="background-color: #d32f2f" (click)="endMeeting()" matTooltip="End meeting for all">
         <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="reaction-picker" *ngIf="showReactionPicker">
+      <button type="button" class="reaction-option" *ngFor="let reaction of availableReactions" (click)="sendReaction(reaction)">
+        {{ reaction }}
       </button>
     </div>
   </div>

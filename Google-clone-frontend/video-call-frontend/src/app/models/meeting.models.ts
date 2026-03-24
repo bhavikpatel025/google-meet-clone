@@ -27,6 +27,8 @@ export interface Participant {
   isCameraOn: boolean;
   isMicrophoneOn: boolean;
   isScreenSharing: boolean;
+  isHandRaised?: boolean;
+  handRaisedAt?: Date | string | null;
   role: string;
   joinedAt: Date;
   connectionId?: string;
@@ -61,6 +63,27 @@ export interface ScreenShareState {
   meetingId: number;
   userId?: string | null;
   isSharing: boolean;
+}
+
+export interface HandRaiseEvent {
+  meetingId: number;
+  userId: string;
+  userName: string;
+  handRaisedAt: Date | string;
+}
+
+export interface HandLowerEvent {
+  meetingId: number;
+  userId: string;
+}
+
+export interface MeetingReaction {
+  id: string;
+  meetingId: number;
+  userId: string;
+  userName: string;
+  reaction: string;
+  sentAt: Date | string;
 }
 
 export interface ApiResponse<T> {

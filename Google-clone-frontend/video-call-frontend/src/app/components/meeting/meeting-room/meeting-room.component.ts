@@ -18,7 +18,7 @@ import { SignalrService } from '../../../services/signalr.service';
 import { WebrtcService } from '../../../services/webrtc.service';
 import { ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
-import { MeetingResponse, Participant } from '../../../models/meeting.models';
+import { HandRaiseEvent, MeetingReaction, MeetingResponse, Participant } from '../../../models/meeting.models';
 import { ChatMessage } from '../../../models/chat.models';
 import { SrcObjectDirective } from '../../../directives/src-object.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -41,8 +41,18 @@ interface ParticipantTile {
   isCameraOn: boolean;
   isMicrophoneOn: boolean;
   isScreenSharing: boolean;
+  isHandRaised: boolean;
   isHost: boolean;
   isLocal: boolean;
+}
+
+interface RaisedHandEntry {
+  userId: string;
+  userName: string;
+  profilePictureUrl?: string | null;
+  isLocal: boolean;
+  isHost: boolean;
+  handRaisedAt?: Date | string | null;
 }
 
 @Component({
@@ -84,9 +94,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   
   showParticipants = false;
   showChat = false;
+  showReactionPicker = false;
   unreadMessages = 0;
   participantSearchTerm = '';
   currentTimeLabel = '';
+  isHandRaised = false;
+  localHandRaisedAt?: Date | string | null;
+  activeReactions: MeetingReaction[] = [];
+  readonly availableReactions = ['❤️', '👍', '🎉', '👏', '😂', '😮', '😢', '🤔', '👎'];
   
   chatForm: FormGroup;
   meetingId = 0;
@@ -97,6 +112,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   
   private subscriptions: Subscription[] = [];
   private timeRefreshHandle?: ReturnType<typeof setInterval>;
+  private reactionTimeoutHandles = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(
     private route: ActivatedRoute,
@@ -226,6 +242,9 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     const currentParticipantsSub = this.signalrService.currentParticipants$.subscribe(participants => {
       const currentUserId = resolveCurrentUserId();
       console.log('Current participants:', participants);
+      const localParticipant = participants.find(participant => participant.userId === currentUserId);
+      this.isHandRaised = localParticipant?.isHandRaised ?? false;
+      this.localHandRaisedAt = localParticipant?.handRaisedAt ?? null;
       this.participants = participants.filter(p => p.userId !== currentUserId);
       this.syncRemoteStreamMetadata();
       this.updateCurrentScreenSharer();
@@ -350,6 +369,31 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.push(messageSub);
+
+    const handRaisedSub = this.signalrService.handRaised$.subscribe(data => {
+      this.applyLocalHandRaiseState(data);
+    });
+    this.subscriptions.push(handRaisedSub);
+
+    const handLoweredSub = this.signalrService.handLowered$.subscribe(data => {
+      if (data.userId === this.currentUserId) {
+        this.isHandRaised = false;
+        this.localHandRaisedAt = null;
+      }
+    });
+    this.subscriptions.push(handLoweredSub);
+
+    const allHandsLoweredSub = this.signalrService.allHandsLowered$.subscribe(() => {
+      this.isHandRaised = false;
+      this.localHandRaisedAt = null;
+    });
+    this.subscriptions.push(allHandsLoweredSub);
+
+    const reactionSub = this.signalrService.reactionReceived$.subscribe(reaction => {
+      this.activeReactions = [...this.activeReactions, reaction];
+      this.scheduleReactionRemoval(reaction.id);
+    });
+    this.subscriptions.push(reactionSub);
 
     // Meeting ended
     const meetingEndedSub = this.signalrService.meetingEnded$.subscribe(ended => {
@@ -504,9 +548,36 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     const nextState = !this.showChat;
     this.resetPanels();
     this.showChat = nextState;
+    this.showReactionPicker = false;
     if (this.showChat) {
       this.unreadMessages = 0;
     }
+  }
+
+  async toggleRaiseHand(): Promise<void> {
+    if (this.isHandRaised) {
+      await this.signalrService.lowerHand(this.meetingId, this.currentUserId);
+      return;
+    }
+
+    await this.signalrService.raiseHand(this.meetingId);
+  }
+
+  async lowerHand(userId: string): Promise<void> {
+    await this.signalrService.lowerHand(this.meetingId, userId);
+  }
+
+  async lowerAllHands(): Promise<void> {
+    await this.signalrService.lowerAllHands(this.meetingId);
+  }
+
+  toggleReactionPicker(): void {
+    this.showReactionPicker = !this.showReactionPicker;
+  }
+
+  async sendReaction(reaction: string): Promise<void> {
+    this.showReactionPicker = false;
+    await this.signalrService.sendReaction(this.meetingId, reaction);
   }
 
   loadChatHistory(): void {
@@ -593,6 +664,9 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     
     // Cleanup WebRTC
     this.webrtcService.cleanup();
+
+    this.reactionTimeoutHandles.forEach(handle => clearTimeout(handle));
+    this.reactionTimeoutHandles.clear();
   }
 
   ngOnDestroy(): void {
@@ -608,6 +682,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       isCameraOn: this.isCameraOn,
       isMicrophoneOn: this.isMicrophoneOn,
       isScreenSharing: this.isScreenSharing,
+      isHandRaised: this.isHandRaised,
       isHost: this.isHost,
       isLocal: true
     };
@@ -623,6 +698,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
         isCameraOn: remoteStream?.isCameraOn ?? participant.isCameraOn,
         isMicrophoneOn: remoteStream?.isMicrophoneOn ?? participant.isMicrophoneOn,
         isScreenSharing: remoteStream?.isScreenSharing ?? participant.isScreenSharing,
+        isHandRaised: participant.isHandRaised ?? false,
         isHost: participant.role === 'Host',
         isLocal: false
       };
@@ -652,6 +728,36 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     }
 
     return this.allParticipantTiles.filter(tile => tile.userId !== this.screenShareTile?.userId);
+  }
+
+  get raisedHands(): RaisedHandEntry[] {
+    const entries: RaisedHandEntry[] = [];
+
+    if (this.isHandRaised) {
+      entries.push({
+        userId: this.currentUserId,
+        userName: 'You',
+        profilePictureUrl: this.authService.currentUserValue?.profilePictureUrl ?? null,
+        isLocal: true,
+        isHost: this.isHost,
+        handRaisedAt: this.localHandRaisedAt
+      });
+    }
+
+    this.participants
+      .filter(participant => participant.isHandRaised)
+      .forEach(participant => {
+        entries.push({
+          userId: participant.userId,
+          userName: participant.userName,
+          profilePictureUrl: participant.profilePictureUrl ?? null,
+          isLocal: false,
+          isHost: participant.role === 'Host',
+          handRaisedAt: participant.handRaisedAt
+        });
+      });
+
+    return entries.sort((left, right) => this.getHandRaisedTimestamp(left.handRaisedAt) - this.getHandRaisedTimestamp(right.handRaisedAt));
   }
 
   get participantGridClass(): string {
@@ -712,6 +818,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   formatTime(date: Date): string {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  getReactionsForTile(userId: string): MeetingReaction[] {
+    return this.activeReactions.filter(reaction => reaction.userId === userId);
+  }
+
+  trackReaction(_: number, reaction: MeetingReaction): string {
+    return reaction.id;
   }
 
   shouldShowVideo(tile: ParticipantTile): boolean {
@@ -819,5 +933,38 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   private resetPanels(): void {
     this.showParticipants = false;
     this.showChat = false;
+    this.showReactionPicker = false;
+  }
+
+  private applyLocalHandRaiseState(data: HandRaiseEvent): void {
+    if (data.userId !== this.currentUserId) {
+      return;
+    }
+
+    this.isHandRaised = true;
+    this.localHandRaisedAt = data.handRaisedAt;
+  }
+
+  private scheduleReactionRemoval(reactionId: string): void {
+    const existingHandle = this.reactionTimeoutHandles.get(reactionId);
+    if (existingHandle) {
+      clearTimeout(existingHandle);
+    }
+
+    const timeoutHandle = setTimeout(() => {
+      this.activeReactions = this.activeReactions.filter(reaction => reaction.id !== reactionId);
+      this.reactionTimeoutHandles.delete(reactionId);
+    }, 2600);
+
+    this.reactionTimeoutHandles.set(reactionId, timeoutHandle);
+  }
+
+  private getHandRaisedTimestamp(value?: Date | string | null): number {
+    if (!value) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
   }
 }

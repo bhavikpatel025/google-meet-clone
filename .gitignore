@@ -29,10 +29,10 @@ appsettings.Development.json
 appsettings.Local.json
 
 # ===============================
-# User Uploaded Files (IMPORTANT 🔥)
+# User Uploaded Files
 # ===============================
-wwwroot/profile/*
-!wwwroot/profile/.gitkeep
+**/wwwroot/profile/*
+!**/wwwroot/profile/.gitkeep
 
 # ===============================
 # Angular / Node

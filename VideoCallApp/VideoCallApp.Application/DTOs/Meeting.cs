@@ -27,6 +27,20 @@ public class JoinMeetingRequestDto
     public string MeetingCode { get; set; } = string.Empty;
 }
 
+public class InviteParticipantsRequestDto
+{
+    public int MeetingId { get; set; }
+    public List<string> Emails { get; set; } = new();
+    public string HostName { get; set; } = string.Empty;
+}
+
+public class InviteParticipantsResponseDto
+{
+    public int SentCount { get; set; }
+    public List<string> InvitedEmails { get; set; } = new();
+    public List<string> SkippedEmails { get; set; } = new();
+}
+
 public class ParticipantDto
 {
     public int Id { get; set; }

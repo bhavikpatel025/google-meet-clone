@@ -18,6 +18,7 @@ public static class DependencyInjection
         // JWT Configuration
         var jwtSettings = configuration.GetSection("JwtSettings");
         services.Configure<JwtSettings>(jwtSettings);
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
         var jwtSettingsValue = jwtSettings.Get<JwtSettings>();
         var key = Encoding.UTF8.GetBytes(jwtSettingsValue?.Secret ?? "");
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IMeetingService, MeetingService>();
         services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<IMeetingInvitationEmailService, MeetingInvitationEmailService>();
 
         return services;
     }

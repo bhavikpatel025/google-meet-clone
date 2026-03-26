@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { 
   CreateMeetingRequest, 
+  InviteParticipantsRequest,
+  InviteParticipantsResponse,
   MeetingResponse, 
   JoinMeetingRequest,
   Participant,
@@ -51,5 +53,9 @@ export class MeetingService {
 
   updateMediaState(meetingId: number, request: UpdateMediaStateRequest): Observable<ApiResponse<boolean>> {
     return this.http.put<ApiResponse<boolean>>(`${environment.apiUrl}/Meeting/${meetingId}/media-state`, request);
+  }
+
+  inviteParticipants(request: InviteParticipantsRequest): Observable<ApiResponse<InviteParticipantsResponse>> {
+    return this.http.post<ApiResponse<InviteParticipantsResponse>>(`${environment.apiUrl}/Meeting/invite`, request);
   }
 }

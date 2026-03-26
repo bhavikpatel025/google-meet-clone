@@ -45,6 +45,18 @@ export interface JoinMeetingRequest {
   meetingCode: string;
 }
 
+export interface InviteParticipantsRequest {
+  meetingId: number;
+  emails: string[];
+  hostName: string;
+}
+
+export interface InviteParticipantsResponse {
+  sentCount: number;
+  invitedEmails: string[];
+  skippedEmails: string[];
+}
+
 export interface UpdateMediaStateRequest {
   isCameraOn?: boolean;
   isMicrophoneOn?: boolean;

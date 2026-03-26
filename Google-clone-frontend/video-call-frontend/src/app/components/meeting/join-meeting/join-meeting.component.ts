@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -27,7 +27,7 @@ import { MeetingService } from '../../../services/meeting.service';
   templateUrl: './join-meeting.component.html',
   styleUrls: ['./join-meeting.component.css']
 })
-export class JoinMeetingComponent {
+export class JoinMeetingComponent implements OnInit {
   joinForm: FormGroup;
   loading = false;
   errorMessage = '';
@@ -35,11 +35,25 @@ export class JoinMeetingComponent {
   constructor(
     private fb: FormBuilder,
     private meetingService: MeetingService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.joinForm = this.fb.group({
       meetingCode: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]]
     });
+  }
+
+  ngOnInit(): void {
+    const meetingCode = this.route.snapshot.paramMap.get('meetingCode');
+    if (!meetingCode) {
+      return;
+    }
+
+    this.joinForm.patchValue({
+      meetingCode: meetingCode.toUpperCase()
+    });
+
+    this.onSubmit();
   }
 
   onSubmit(): void {

@@ -24,6 +24,7 @@ import { ChatMessage } from '../../../models/chat.models';
 import { SrcObjectDirective } from '../../../directives/src-object.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EndMeetingDialogComponent } from '../end-meeting-dialog/end-meeting-dialog.component';
+import { InvitePeopleDialogComponent } from '../invite-people-dialog/invite-people-dialog.component';
 
 interface RemoteStream {
   userId: string;
@@ -663,7 +664,6 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   async sendReaction(reaction: string): Promise<void> {
-    this.showReactionPicker = false;
     await this.signalrService.sendReaction(this.meetingId, reaction);
   }
 
@@ -763,8 +763,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     this.cleanup();
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    const clickedInsideReactionUi = !!target?.closest('.reaction-picker, .reaction-toggle-button');
+    if (!clickedInsideReactionUi) {
+      this.showReactionPicker = false;
+    }
+
     this.closeWaitingParticipantMenu();
   }
 
@@ -1058,6 +1064,25 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/my-meetings']);
+  }
+
+  openInviteDialog(): void {
+    if (!this.meeting || !this.isHost) {
+      return;
+    }
+
+    this.dialog.open(InvitePeopleDialogComponent, {
+      width: '680px',
+      maxWidth: '96vw',
+      autoFocus: false,
+      restoreFocus: false,
+      data: {
+        meetingId: this.meeting.id,
+        meetingCode: this.meeting.meetingCode,
+        meetingTitle: this.meeting.title,
+        hostName: this.currentUserName
+      }
+    });
   }
 
   shouldShowVideo(tile: ParticipantTile): boolean {

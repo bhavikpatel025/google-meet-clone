@@ -144,6 +144,12 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
+      <div class="participant-invite-action" *ngIf="isHost">
+        <button mat-flat-button color="primary" type="button" (click)="openInviteDialog()">
+          <mat-icon>person_add</mat-icon>
+          Add people
+        </button>
+      </div>
       <div class="participant-search">
         <mat-form-field appearance="outline" class="full-width">
           <mat-icon matPrefix>search</mat-icon>
@@ -392,7 +398,7 @@
         <mat-icon>{{ isScreenSharing ? 'stop_screen_share' : 'screen_share' }}</mat-icon>
       </button>
 
-      <button mat-mini-fab class="control-button" [class.active]="showReactionPicker" (click)="toggleReactionPicker()" matTooltip="Reactions">
+      <button mat-mini-fab class="control-button reaction-toggle-button" [class.active]="showReactionPicker" (click)="toggleReactionPicker()" matTooltip="Reactions">
         <mat-icon>mood</mat-icon>
       </button>
 
@@ -411,7 +417,7 @@
       </button>
     </div>
 
-    <div class="reaction-picker" *ngIf="showReactionPicker">
+    <div class="reaction-picker" *ngIf="showReactionPicker" (click)="$event.stopPropagation()">
       <button type="button" class="reaction-option" *ngFor="let reaction of availableReactions" (click)="sendReaction(reaction)">
         {{ reaction }}
       </button>

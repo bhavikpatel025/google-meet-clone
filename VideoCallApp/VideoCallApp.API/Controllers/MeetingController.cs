@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using VideoCallApp.Application.DTOs.Meeting;
 using VideoCallApp.Application.Interfaces;
@@ -13,17 +14,26 @@ namespace VideoCallApp.API.Controllers;
 public class MeetingController : ControllerBase
 {
     private readonly IMeetingService _meetingService;
+    private readonly IMeetingInvitationEmailService _meetingInvitationEmailService;
     private readonly IValidator<CreateMeetingRequestDto> _createMeetingValidator;
     private readonly IValidator<JoinMeetingRequestDto> _joinMeetingValidator;
+    private readonly IValidator<InviteParticipantsRequestDto> _inviteParticipantsValidator;
+    private readonly IConfiguration _configuration;
 
     public MeetingController(
         IMeetingService meetingService,
         IValidator<CreateMeetingRequestDto> createMeetingValidator,
-        IValidator<JoinMeetingRequestDto> joinMeetingValidator)
+        IValidator<JoinMeetingRequestDto> joinMeetingValidator,
+        IValidator<InviteParticipantsRequestDto> inviteParticipantsValidator,
+        IMeetingInvitationEmailService meetingInvitationEmailService,
+        IConfiguration configuration)
     {
         _meetingService = meetingService;
         _createMeetingValidator = createMeetingValidator;
         _joinMeetingValidator = joinMeetingValidator;
+        _inviteParticipantsValidator = inviteParticipantsValidator;
+        _meetingInvitationEmailService = meetingInvitationEmailService;
+        _configuration = configuration;
     }
 
     private string GetUserId()
@@ -129,6 +139,89 @@ public class MeetingController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Invite participants by email
+    /// </summary>
+    [HttpPost("invite")]
+    public async Task<IActionResult> InviteParticipants([FromBody] InviteParticipantsRequestDto request, CancellationToken cancellationToken)
+    {
+        var validationResult = await _inviteParticipantsValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                errors = validationResult.Errors.Select(e => e.ErrorMessage)
+            });
+        }
+
+        var userId = GetUserId();
+        var meetingResult = await _meetingService.GetMeetingByIdAsync(request.MeetingId);
+        if (!meetingResult.Success || meetingResult.Data == null)
+        {
+            return NotFound(new { success = false, message = "Meeting not found" });
+        }
+
+        if (meetingResult.Data.HostId != userId)
+        {
+            return Forbid();
+        }
+
+        var participantsResult = await _meetingService.GetMeetingParticipantsAsync(request.MeetingId);
+        var participantEmails = participantsResult.Success && participantsResult.Data != null
+            ? participantsResult.Data
+                .Select(participant => participant.Email)
+                .Where(email => !string.IsNullOrWhiteSpace(email))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var normalizedEmails = request.Emails
+            .Where(email => !string.IsNullOrWhiteSpace(email))
+            .Select(email => email.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var invitedEmails = normalizedEmails
+            .Where(email => !participantEmails.Contains(email))
+            .ToList();
+
+        if (invitedEmails.Count == 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "No new participants to invite"
+            });
+        }
+
+        var skippedEmails = normalizedEmails
+            .Where(email => !invitedEmails.Contains(email, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        var clientBaseUrl = _configuration["ClientApp:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:4200";
+        var meetingLink = $"{clientBaseUrl}/join/{meetingResult.Data.MeetingCode}";
+
+        await _meetingInvitationEmailService.SendMeetingInvitationsAsync(
+            invitedEmails,
+            string.IsNullOrWhiteSpace(request.HostName) ? meetingResult.Data.HostName : request.HostName,
+            meetingResult.Data.Title,
+            meetingResult.Data.MeetingCode,
+            meetingLink,
+            cancellationToken);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Invitations sent successfully",
+            data = new InviteParticipantsResponseDto
+            {
+                SentCount = invitedEmails.Count,
+                InvitedEmails = invitedEmails,
+                SkippedEmails = skippedEmails
+            }
+        });
     }
 
     /// <summary>

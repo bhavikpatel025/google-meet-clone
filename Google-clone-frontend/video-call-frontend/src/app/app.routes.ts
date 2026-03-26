@@ -31,6 +31,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   { 
+    path: 'join/:meetingCode', 
+    loadComponent: () => import('./components/meeting/join-meeting/join-meeting.component')
+      .then(m => m.JoinMeetingComponent),
+    canActivate: [authGuard]
+  },
+  { 
     path: 'my-meetings', 
     redirectTo: '',
     pathMatch: 'full'

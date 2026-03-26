@@ -1,0 +1,67 @@
+<div class="invite-dialog-shell">
+  <div class="invite-dialog-header">
+    <div>
+      <h2>Add people</h2>
+      <p>Invite participants by email</p>
+    </div>
+    <button mat-icon-button type="button" (click)="close()" aria-label="Close invite dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="meeting-link-card">
+    <div class="meeting-link-copy">
+      <div class="meeting-link-meta">
+        <div class="meeting-link-label">Meeting Code</div>
+        <div class="meeting-link-value">{{ data.meetingCode }}</div>
+      </div>
+      <button mat-stroked-button type="button" (click)="copyMeetingLink()">
+        <mat-icon>content_copy</mat-icon>
+        Copy Link
+      </button>
+    </div>
+    <div class="meeting-link-url">{{ meetingLink }}</div>
+  </div>
+
+  <div class="invite-form-card">
+    <div class="invite-section-title">Invite people</div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Enter name or email</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        [formControl]="inviteForm.controls.emails"
+        placeholder="Enter one or multiple email addresses separated by commas or new lines"></textarea>
+      <mat-icon matPrefix>person_add</mat-icon>
+<mat-hint>Example: user1&#64;example.com, user2&#64;example.com</mat-hint>    </mat-form-field>
+
+    <div class="invite-chip-list" *ngIf="parsedEmails.length > 0">
+      <span class="invite-chip" *ngFor="let email of parsedEmails">{{ email }}</span>
+    </div>
+
+    <div class="invite-status success" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="invite-status error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <div class="invite-result-list" *ngIf="invitedEmails.length > 0">
+      <div class="invite-result-title">Invited</div>
+      <span class="invite-result-email" *ngFor="let email of invitedEmails">{{ email }}</span>
+    </div>
+
+    <div class="invite-result-list skipped" *ngIf="skippedEmails.length > 0">
+      <div class="invite-result-title">Skipped</div>
+      <span class="invite-result-email" *ngFor="let email of skippedEmails">{{ email }}</span>
+    </div>
+  </div>
+
+  <div class="invite-dialog-footer">
+    <div class="invite-footer-note">
+      <mat-icon>shield</mat-icon>
+      <span>Only invited people will receive the meeting link by email.</span>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="sendInvites()" [disabled]="loading">
+      <mat-icon *ngIf="!loading">send</mat-icon>
+      {{ loading ? 'Sending...' : 'Send Invite' }}
+    </button>
+  </div>
+</div>

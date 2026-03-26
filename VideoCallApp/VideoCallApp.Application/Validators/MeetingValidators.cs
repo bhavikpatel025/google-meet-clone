@@ -24,3 +24,23 @@ public class JoinMeetingRequestValidator : AbstractValidator<JoinMeetingRequestD
             .Length(8).WithMessage("Meeting code must be 8 characters");
     }
 }
+
+public class InviteParticipantsRequestValidator : AbstractValidator<InviteParticipantsRequestDto>
+{
+    public InviteParticipantsRequestValidator()
+    {
+        RuleFor(x => x.MeetingId)
+            .GreaterThan(0).WithMessage("Meeting ID is required");
+
+        RuleFor(x => x.HostName)
+            .NotEmpty().WithMessage("Host name is required")
+            .MaximumLength(200).WithMessage("Host name cannot exceed 200 characters");
+
+        RuleFor(x => x.Emails)
+            .NotEmpty().WithMessage("At least one email address is required");
+
+        RuleForEach(x => x.Emails)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("Invalid email format");
+    }
+}

@@ -34,6 +34,8 @@ appsettings.Local.json
 **/wwwroot/profile/*
 !**/wwwroot/profile/.gitkeep
 
+.dotnet/
+
 # ===============================
 # Angular / Node
 # ===============================

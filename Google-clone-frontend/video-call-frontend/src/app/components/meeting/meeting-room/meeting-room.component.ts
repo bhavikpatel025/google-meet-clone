@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -12,13 +12,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { MeetingService } from '../../../services/meeting.service';
 import { SignalrService } from '../../../services/signalr.service';
 import { WebrtcService } from '../../../services/webrtc.service';
 import { ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
-import { HandRaiseEvent, MeetingReaction, MeetingResponse, Participant } from '../../../models/meeting.models';
+import { HandRaiseEvent, MeetingReaction, MeetingResponse, Participant, WaitingParticipant } from '../../../models/meeting.models';
 import { ChatMessage } from '../../../models/chat.models';
 import { SrcObjectDirective } from '../../../directives/src-object.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -66,6 +67,13 @@ interface ContributorEntry {
   isScreenSharing: boolean;
 }
 
+interface WaitingParticipantEntry {
+  userId: string;
+  userName: string;
+  profilePictureUrl?: string | null;
+  requestedAt?: Date | string | null;
+}
+
 @Component({
   selector: 'app-meeting-room',
   standalone: true,
@@ -84,6 +92,7 @@ interface ContributorEntry {
     MatInputModule,
     MatTooltipModule,
     MatBadgeModule,
+    MatMenuModule,
     MatDialogModule,
     SrcObjectDirective
   ],
@@ -109,11 +118,16 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   unreadMessages = 0;
   participantSearchTerm = '';
   currentTimeLabel = '';
+  isWaitingForAdmission = false;
+  isJoinDenied = false;
+  hasJoinedMeeting = false;
   showRaisedHandsSection = true;
   showContributorsSection = true;
+  showWaitingToJoinSection = true;
   isHandRaised = false;
   localHandRaisedAt?: Date | string | null;
   activeReactions: MeetingReaction[] = [];
+  waitingParticipants: WaitingParticipant[] = [];
   readonly availableReactions = ['❤️', '👍', '🎉', '👏', '😂', '😮', '😢', '🤔', '👎'];
   
   chatForm: FormGroup;
@@ -122,10 +136,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   isHost = false;
   loading = true;
   errorMessage = '';
+  denyRedirectSeconds = 60;
+  openWaitingParticipantMenuUserId: string | null = null;
   
   private subscriptions: Subscription[] = [];
   private timeRefreshHandle?: ReturnType<typeof setInterval>;
   private reactionTimeoutHandles = new Map<string, ReturnType<typeof setTimeout>>();
+  private chatHistoryLoaded = false;
+  private denyRedirectHandle?: ReturnType<typeof setInterval>;
 
   constructor(
     private route: ActivatedRoute,
@@ -180,12 +198,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       await this.initializeMedia();
 
       // Step 5: Join meeting via SignalR
-      await this.signalrService.joinMeeting(this.meeting!.meetingCode);
-      
-      // Step 6: Load chat history
-      this.loadChatHistory();
-      
-      this.loading = false;
+      await this.signalrService.joinMeeting(
+        this.meeting!.meetingCode,
+        this.currentUserName,
+        this.authService.currentUserValue?.profilePictureUrl ?? null
+      );
     } catch (error) {
       console.error('Error initializing meeting:', error);
       this.errorMessage = 'Failed to join meeting';
@@ -253,6 +270,10 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
     // Current participants
     const currentParticipantsSub = this.signalrService.currentParticipants$.subscribe(participants => {
+      if (!this.hasJoinedMeeting) {
+        return;
+      }
+
       const currentUserId = resolveCurrentUserId();
       console.log('Current participants:', participants);
       const localParticipant = participants.find(participant => participant.userId === currentUserId);
@@ -359,6 +380,10 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     this.subscriptions.push(screenSharerSub);
 
     const reconnectedSub = this.signalrService.reconnected$.subscribe(() => {
+      if (this.isWaitingForAdmission || !this.hasJoinedMeeting) {
+        return;
+      }
+
       console.log('SignalR reconnected, rebuilding peer connections');
       const participantIds = this.participants.map(participant => participant.userId);
       this.remoteStreams = [];
@@ -373,6 +398,49 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.push(reconnectedSub);
+
+    const waitingRoomEnteredSub = this.signalrService.waitingRoomEntered$.subscribe(state => {
+      if (state.meetingId !== this.meetingId) {
+        return;
+      }
+
+      this.isWaitingForAdmission = state.isWaiting;
+      this.hasJoinedMeeting = !state.isWaiting;
+      this.loading = false;
+    });
+    this.subscriptions.push(waitingRoomEnteredSub);
+
+    const joinApprovedSub = this.signalrService.joinApproved$.subscribe(state => {
+      if (state.meetingId !== this.meetingId) {
+        return;
+      }
+
+      this.isJoinDenied = false;
+      this.isWaitingForAdmission = false;
+      this.hasJoinedMeeting = true;
+      this.loading = false;
+
+      if (!this.chatHistoryLoaded) {
+        this.loadChatHistory();
+      }
+
+      void this.syncAdmittedMediaState();
+    });
+    this.subscriptions.push(joinApprovedSub);
+
+    const joinDeniedSub = this.signalrService.joinDenied$.subscribe(state => {
+      if (state.meetingId !== this.meetingId) {
+        return;
+      }
+
+      void this.handleJoinDenied();
+    });
+    this.subscriptions.push(joinDeniedSub);
+
+    const waitingParticipantsUpdatedSub = this.signalrService.waitingParticipantsUpdated$.subscribe(participants => {
+      this.waitingParticipants = participants;
+    });
+    this.subscriptions.push(waitingParticipantsUpdatedSub);
 
     // New message
     const messageSub = this.signalrService.newMessage$.subscribe(message => {
@@ -498,18 +566,24 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   async toggleCamera(): Promise<void> {
     this.isCameraOn = !this.isCameraOn;
     this.webrtcService.toggleVideo(this.isCameraOn);
+
+    if (!this.hasJoinedMeeting) {
+      return;
+    }
+
     await this.signalrService.toggleCamera(this.meetingId, this.isCameraOn);
-    
-    // Update backend
     this.meetingService.updateMediaState(this.meetingId, { isCameraOn: this.isCameraOn }).subscribe();
   }
 
   async toggleMicrophone(): Promise<void> {
     this.isMicrophoneOn = !this.isMicrophoneOn;
     this.webrtcService.toggleAudio(this.isMicrophoneOn);
+
+    if (!this.hasJoinedMeeting) {
+      return;
+    }
+
     await this.signalrService.toggleMicrophone(this.meetingId, this.isMicrophoneOn);
-    
-    // Update backend
     this.meetingService.updateMediaState(this.meetingId, { isMicrophoneOn: this.isMicrophoneOn }).subscribe();
   }
 
@@ -598,6 +672,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       next: (response) => {
         if (response.success && response.data) {
           this.chatMessages = response.data;
+          this.chatHistoryLoaded = true;
         }
       },
       error: (error) => {
@@ -616,16 +691,13 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   async leaveMeeting(): Promise<void> {
     try {
-      // Leave via SignalR
       await this.signalrService.leaveMeeting(this.meetingId);
-      
-      // Leave via HTTP
-      this.meetingService.leaveMeeting(this.meetingId).subscribe();
-      
-      // Cleanup
+
+      if (this.hasJoinedMeeting) {
+        this.meetingService.leaveMeeting(this.meetingId).subscribe();
+      }
+
       this.cleanup();
-      
-      // Navigate away
       this.router.navigate(['/my-meetings']);
     } catch (error) {
       console.error('Error leaving meeting:', error);
@@ -669,6 +741,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       this.timeRefreshHandle = undefined;
     }
 
+    if (this.denyRedirectHandle) {
+      clearInterval(this.denyRedirectHandle);
+      this.denyRedirectHandle = undefined;
+    }
+
     // Unsubscribe from all observables
     this.subscriptions.forEach(sub => sub.unsubscribe());
     
@@ -684,6 +761,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cleanup();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeWaitingParticipantMenu();
   }
 
   get allParticipantTiles(): ParticipantTile[] {
@@ -722,6 +804,10 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   get screenShareTile(): ParticipantTile | null {
     return this.allParticipantTiles.find(tile => tile.isScreenSharing) ?? null;
+  }
+
+  get localPreviewTile(): ParticipantTile {
+    return this.allParticipantTiles[0];
   }
 
   get filteredParticipants(): Participant[] {
@@ -880,6 +966,32 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     return this.participants.length + 1; // +1 for self
   }
 
+  get waitingToJoin(): WaitingParticipantEntry[] {
+    return this.waitingParticipants
+      .map(participant => ({
+        userId: participant.userId,
+        userName: participant.userName,
+        profilePictureUrl: participant.profilePictureUrl ?? null,
+        requestedAt: participant.requestedAt ?? null
+      }))
+      .sort((left, right) => this.getHandRaisedTimestamp(left.requestedAt) - this.getHandRaisedTimestamp(right.requestedAt));
+  }
+
+  get filteredWaitingToJoin(): WaitingParticipantEntry[] {
+    const searchTerm = this.participantSearchTerm.trim().toLowerCase();
+    if (!searchTerm) {
+      return this.waitingToJoin;
+    }
+
+    return this.waitingToJoin.filter(participant =>
+      participant.userName.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  get denyCountdownProgress(): number {
+    return (this.denyRedirectSeconds / 60) * 100;
+  }
+
   trackTile(_: number, tile: ParticipantTile): string {
     return tile.userId;
   }
@@ -904,8 +1016,48 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     this.showRaisedHandsSection = !this.showRaisedHandsSection;
   }
 
+  toggleWaitingToJoinSection(): void {
+    this.showWaitingToJoinSection = !this.showWaitingToJoinSection;
+  }
+
   toggleContributorsSection(): void {
     this.showContributorsSection = !this.showContributorsSection;
+  }
+
+  async admitParticipant(userId: string): Promise<void> {
+    await this.signalrService.admitParticipant(this.meetingId, userId);
+  }
+
+  async admitAllParticipants(): Promise<void> {
+    await this.signalrService.admitAllParticipants(this.meetingId);
+  }
+
+  async denyParticipant(userId: string | null): Promise<void> {
+    if (!userId) {
+      return;
+    }
+
+    this.openWaitingParticipantMenuUserId = null;
+    await this.signalrService.denyParticipant(this.meetingId, userId);
+  }
+
+  toggleWaitingParticipantMenu(event: MouseEvent, userId: string): void {
+    event.stopPropagation();
+    this.openWaitingParticipantMenuUserId =
+      this.openWaitingParticipantMenuUserId === userId ? null : userId;
+  }
+
+  closeWaitingParticipantMenu(): void {
+    this.openWaitingParticipantMenuUserId = null;
+  }
+
+  returnToHomeScreen(): void {
+    if (this.denyRedirectHandle) {
+      clearInterval(this.denyRedirectHandle);
+      this.denyRedirectHandle = undefined;
+    }
+
+    this.router.navigate(['/my-meetings']);
   }
 
   shouldShowVideo(tile: ParticipantTile): boolean {
@@ -1023,6 +1175,46 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
     this.isHandRaised = true;
     this.localHandRaisedAt = data.handRaisedAt;
+  }
+
+  private async handleJoinDenied(): Promise<void> {
+    this.isJoinDenied = true;
+    this.isWaitingForAdmission = false;
+    this.hasJoinedMeeting = false;
+    this.loading = false;
+    this.showParticipants = false;
+    this.showChat = false;
+    this.showReactionPicker = false;
+    this.waitingParticipants = [];
+    this.openWaitingParticipantMenuUserId = null;
+    this.denyRedirectSeconds = 60;
+
+    if (this.denyRedirectHandle) {
+      clearInterval(this.denyRedirectHandle);
+    }
+
+    await this.signalrService.stopConnection();
+    this.webrtcService.cleanup();
+    this.localStream = undefined;
+    this.localDisplayStream = undefined;
+
+    this.denyRedirectHandle = setInterval(() => {
+      this.denyRedirectSeconds -= 1;
+
+      if (this.denyRedirectSeconds <= 0) {
+        this.returnToHomeScreen();
+      }
+    }, 1000);
+  }
+
+  private async syncAdmittedMediaState(): Promise<void> {
+    await this.signalrService.toggleCamera(this.meetingId, this.isCameraOn);
+    await this.signalrService.toggleMicrophone(this.meetingId, this.isMicrophoneOn);
+
+    this.meetingService.updateMediaState(this.meetingId, {
+      isCameraOn: this.isCameraOn,
+      isMicrophoneOn: this.isMicrophoneOn
+    }).subscribe();
   }
 
   private scheduleReactionRemoval(reactionId: string): void {

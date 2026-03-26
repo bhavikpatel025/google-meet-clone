@@ -11,6 +11,15 @@ namespace VideoCallApp.API.Hubs;
 [Authorize]
 public class VideoCallHub : Hub
 {
+    private sealed class WaitingParticipantState
+    {
+        public required string UserId { get; init; }
+        public required string UserName { get; set; }
+        public string? ProfilePictureUrl { get; set; }
+        public required string ConnectionId { get; set; }
+        public required DateTime RequestedAtUtc { get; init; }
+    }
+
     private sealed class HandRaiseState
     {
         public required string UserId { get; init; }
@@ -23,6 +32,7 @@ public class VideoCallHub : Hub
 
     private static readonly ConcurrentDictionary<string, int> ConnectionMeetings = new();
     private static readonly ConcurrentDictionary<int, List<HandRaiseState>> MeetingRaisedHands = new();
+    private static readonly ConcurrentDictionary<int, List<WaitingParticipantState>> MeetingWaitingParticipants = new();
 
     public VideoCallHub(IMeetingService meetingService, IChatService chatService)
     {
@@ -64,41 +74,60 @@ public class VideoCallHub : Hub
                 await BroadcastMeetingState(meetingId, participantsResult.Data);
             }
         }
+        else if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var waitingMeetingId = RemoveWaitingParticipantByConnection(Context.ConnectionId, userId);
+            if (waitingMeetingId.HasValue)
+            {
+                await BroadcastWaitingParticipants(waitingMeetingId.Value);
+            }
+        }
 
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task JoinMeeting(string meetingCode)
+    public async Task JoinMeeting(string meetingCode, string? userName = null, string? profilePictureUrl = null)
     {
         var userId = GetUserId();
         if (string.IsNullOrWhiteSpace(userId)) return;
 
-        var result = await _meetingService.JoinMeetingAsync(meetingCode, userId, Context.ConnectionId);
-        if (!result.Success || result.Data == null) return;
+        var meetingResult = await _meetingService.GetMeetingByCodeAsync(meetingCode);
+        if (!meetingResult.Success || meetingResult.Data == null) return;
 
-        var meetingId = result.Data.Id;
-        ConnectionMeetings[Context.ConnectionId] = meetingId;
-
-        await Groups.AddToGroupAsync(Context.ConnectionId, $"meeting_{meetingId}");
-
+        var meeting = meetingResult.Data;
+        var meetingId = meeting.Id;
         var participantsResult = await _meetingService.GetMeetingParticipantsAsync(meetingId);
         if (!participantsResult.Success || participantsResult.Data == null) return;
 
-        var participantsWithHandState = ApplyRaisedHandState(meetingId, participantsResult.Data);
-        var participant = participantsWithHandState.FirstOrDefault(p => p.UserId == userId);
+        var alreadyJoined = participantsResult.Data.Any(participant => participant.UserId == userId);
+        var shouldJoinDirectly = meeting.HostId == userId || alreadyJoined;
 
-        await Clients.OthersInGroup($"meeting_{meetingId}")
-            .SendAsync("UserJoined", participant);
-
-        await Clients.Caller.SendAsync("CurrentParticipants", participantsWithHandState);
-
-        var currentScreenSharer = participantsWithHandState.FirstOrDefault(p => p.IsScreenSharing);
-        await Clients.Caller.SendAsync("ScreenShareState", new
+        if (!shouldJoinDirectly)
         {
-            MeetingId = meetingId,
-            UserId = currentScreenSharer?.UserId,
-            IsSharing = currentScreenSharer != null
-        });
+            var resolvedUserName = string.IsNullOrWhiteSpace(userName)
+                ? Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Guest"
+                : userName;
+
+            AddOrUpdateWaitingParticipant(meetingId, new WaitingParticipantState
+            {
+                UserId = userId,
+                UserName = resolvedUserName,
+                ProfilePictureUrl = profilePictureUrl,
+                ConnectionId = Context.ConnectionId,
+                RequestedAtUtc = DateTime.UtcNow
+            });
+
+            await Clients.Caller.SendAsync("WaitingRoomEntered", new
+            {
+                MeetingId = meetingId,
+                IsWaiting = true
+            });
+
+            await BroadcastWaitingParticipants(meetingId);
+            return;
+        }
+
+        await JoinApprovedParticipant(meetingCode, meetingId, userId, Context.ConnectionId, sendUserJoinedEvent: !alreadyJoined);
     }
 
     public async Task LeaveMeeting(int meetingId)
@@ -106,7 +135,22 @@ public class VideoCallHub : Hub
         var userId = GetUserId();
         if (string.IsNullOrWhiteSpace(userId)) return;
 
-        ConnectionMeetings.TryRemove(Context.ConnectionId, out _);
+        if (!ConnectionMeetings.TryRemove(Context.ConnectionId, out _))
+        {
+            var waitingMeetingId = RemoveWaitingParticipantByConnection(Context.ConnectionId, userId);
+            if (waitingMeetingId.HasValue)
+            {
+                await Clients.Caller.SendAsync("WaitingRoomEntered", new
+                {
+                    MeetingId = waitingMeetingId.Value,
+                    IsWaiting = false
+                });
+                await BroadcastWaitingParticipants(waitingMeetingId.Value);
+            }
+
+            return;
+        }
+
         RemoveRaisedHand(meetingId, userId);
 
         await _meetingService.LeaveMeetingAsync(meetingId, userId);
@@ -120,6 +164,85 @@ public class VideoCallHub : Hub
         {
             await BroadcastMeetingState(meetingId, participantsResult.Data);
         }
+    }
+
+    public async Task AdmitParticipant(int meetingId, string targetUserId)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(targetUserId)) return;
+
+        var meetingResult = await _meetingService.GetMeetingByIdAsync(meetingId);
+        if (!meetingResult.Success || meetingResult.Data == null || meetingResult.Data.HostId != userId) return;
+
+        var waitingParticipant = RemoveWaitingParticipant(meetingId, targetUserId);
+        if (waitingParticipant == null) return;
+
+        await JoinApprovedParticipant(
+            meetingResult.Data.MeetingCode,
+            meetingId,
+            waitingParticipant.UserId,
+            waitingParticipant.ConnectionId,
+            sendUserJoinedEvent: true);
+    }
+
+    public async Task AdmitAllParticipants(int meetingId)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrWhiteSpace(userId)) return;
+
+        var meetingResult = await _meetingService.GetMeetingByIdAsync(meetingId);
+        if (!meetingResult.Success || meetingResult.Data == null || meetingResult.Data.HostId != userId) return;
+
+        List<WaitingParticipantState> waitingParticipants;
+        if (!MeetingWaitingParticipants.TryGetValue(meetingId, out var waitingList))
+        {
+            return;
+        }
+
+        lock (waitingList)
+        {
+            waitingParticipants = waitingList
+                .Select(entry => new WaitingParticipantState
+                {
+                    UserId = entry.UserId,
+                    UserName = entry.UserName,
+                    ProfilePictureUrl = entry.ProfilePictureUrl,
+                    ConnectionId = entry.ConnectionId,
+                    RequestedAtUtc = entry.RequestedAtUtc
+                })
+                .ToList();
+        }
+
+        foreach (var waitingParticipant in waitingParticipants)
+        {
+            RemoveWaitingParticipant(meetingId, waitingParticipant.UserId);
+            await JoinApprovedParticipant(
+                meetingResult.Data.MeetingCode,
+                meetingId,
+                waitingParticipant.UserId,
+                waitingParticipant.ConnectionId,
+                sendUserJoinedEvent: true);
+        }
+    }
+
+    public async Task DenyParticipant(int meetingId, string targetUserId)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(targetUserId)) return;
+
+        var meetingResult = await _meetingService.GetMeetingByIdAsync(meetingId);
+        if (!meetingResult.Success || meetingResult.Data == null || meetingResult.Data.HostId != userId) return;
+
+        var waitingParticipant = RemoveWaitingParticipant(meetingId, targetUserId);
+        if (waitingParticipant == null) return;
+
+        await Clients.Client(waitingParticipant.ConnectionId)
+            .SendAsync("JoinDenied", new
+            {
+                MeetingId = meetingId
+            });
+
+        await BroadcastWaitingParticipants(meetingId);
     }
 
     public async Task SendOffer(int meetingId, string targetUserId, string offer)
@@ -238,6 +361,7 @@ public class VideoCallHub : Hub
         if (result.Success)
         {
             MeetingRaisedHands.TryRemove(meetingId, out _);
+            MeetingWaitingParticipants.TryRemove(meetingId, out _);
             await Clients.Group($"meeting_{meetingId}")
                 .SendAsync("MeetingEnded");
         }
@@ -361,6 +485,53 @@ public class VideoCallHub : Hub
             });
     }
 
+    private async Task BroadcastWaitingParticipants(int meetingId)
+    {
+        await Clients.Group($"meeting_{meetingId}")
+            .SendAsync("WaitingParticipantsUpdated", GetWaitingParticipantsSnapshot(meetingId));
+    }
+
+    private async Task JoinApprovedParticipant(
+        string meetingCode,
+        int meetingId,
+        string userId,
+        string connectionId,
+        bool sendUserJoinedEvent)
+    {
+        var result = await _meetingService.JoinMeetingAsync(meetingCode, userId, connectionId);
+        if (!result.Success || result.Data == null) return;
+
+        ConnectionMeetings[connectionId] = meetingId;
+
+        await Groups.AddToGroupAsync(connectionId, $"meeting_{meetingId}");
+        await Clients.Client(connectionId).SendAsync("JoinApproved", new { MeetingId = meetingId });
+
+        var participantsResult = await _meetingService.GetMeetingParticipantsAsync(meetingId);
+        if (!participantsResult.Success || participantsResult.Data == null) return;
+
+        var participantsWithHandState = ApplyRaisedHandState(meetingId, participantsResult.Data);
+        var participant = participantsWithHandState.FirstOrDefault(currentParticipant => currentParticipant.UserId == userId);
+
+        if (sendUserJoinedEvent && participant != null)
+        {
+            await Clients.OthersInGroup($"meeting_{meetingId}")
+                .SendAsync("UserJoined", participant);
+        }
+
+        await Clients.Client(connectionId).SendAsync("CurrentParticipants", participantsWithHandState);
+
+        var currentScreenSharer = participantsWithHandState.FirstOrDefault(currentParticipant => currentParticipant.IsScreenSharing);
+        await Clients.Client(connectionId).SendAsync("ScreenShareState", new
+        {
+            MeetingId = meetingId,
+            UserId = currentScreenSharer?.UserId,
+            IsSharing = currentScreenSharer != null
+        });
+
+        await BroadcastWaitingParticipants(meetingId);
+        await BroadcastMeetingState(meetingId, participantsResult.Data);
+    }
+
     private DateTime AddRaisedHand(int meetingId, string userId, string userName)
     {
         var raisedHands = MeetingRaisedHands.GetOrAdd(meetingId, _ => new List<HandRaiseState>());
@@ -407,6 +578,107 @@ public class VideoCallHub : Hub
     private void ClearRaisedHands(int meetingId)
     {
         MeetingRaisedHands.TryRemove(meetingId, out _);
+    }
+
+    private void AddOrUpdateWaitingParticipant(int meetingId, WaitingParticipantState participant)
+    {
+        var waitingParticipants = MeetingWaitingParticipants.GetOrAdd(meetingId, _ => new List<WaitingParticipantState>());
+
+        lock (waitingParticipants)
+        {
+            var existing = waitingParticipants.FirstOrDefault(entry => entry.UserId == participant.UserId);
+            if (existing != null)
+            {
+                existing.UserName = participant.UserName;
+                existing.ProfilePictureUrl = participant.ProfilePictureUrl;
+                existing.ConnectionId = participant.ConnectionId;
+                return;
+            }
+
+            waitingParticipants.Add(participant);
+        }
+    }
+
+    private WaitingParticipantState? RemoveWaitingParticipant(int meetingId, string userId)
+    {
+        if (!MeetingWaitingParticipants.TryGetValue(meetingId, out var waitingParticipants))
+        {
+            return null;
+        }
+
+        lock (waitingParticipants)
+        {
+            var existing = waitingParticipants.FirstOrDefault(entry => entry.UserId == userId);
+            if (existing == null)
+            {
+                return null;
+            }
+
+            waitingParticipants.Remove(existing);
+            if (waitingParticipants.Count == 0)
+            {
+                MeetingWaitingParticipants.TryRemove(meetingId, out _);
+            }
+
+            return new WaitingParticipantState
+            {
+                UserId = existing.UserId,
+                UserName = existing.UserName,
+                ProfilePictureUrl = existing.ProfilePictureUrl,
+                ConnectionId = existing.ConnectionId,
+                RequestedAtUtc = existing.RequestedAtUtc
+            };
+        }
+    }
+
+    private int? RemoveWaitingParticipantByConnection(string connectionId, string userId)
+    {
+        foreach (var entry in MeetingWaitingParticipants)
+        {
+            lock (entry.Value)
+            {
+                var waitingParticipant = entry.Value.FirstOrDefault(participant =>
+                    participant.ConnectionId == connectionId || participant.UserId == userId);
+
+                if (waitingParticipant == null)
+                {
+                    continue;
+                }
+
+                entry.Value.Remove(waitingParticipant);
+                if (entry.Value.Count == 0)
+                {
+                    MeetingWaitingParticipants.TryRemove(entry.Key, out _);
+                }
+
+                return entry.Key;
+            }
+        }
+
+        return null;
+    }
+
+    private List<object> GetWaitingParticipantsSnapshot(int meetingId)
+    {
+        if (!MeetingWaitingParticipants.TryGetValue(meetingId, out var waitingParticipants))
+        {
+            return new List<object>();
+        }
+
+        lock (waitingParticipants)
+        {
+            return waitingParticipants
+                .OrderBy(participant => participant.RequestedAtUtc)
+                .Select(participant => new
+                {
+                    participant.UserId,
+                    participant.UserName,
+                    participant.ProfilePictureUrl,
+                    RequestedAt = participant.RequestedAtUtc
+                })
+                .Cast<object>()
+                .ToList();
+        }
     }
 
     private List<ParticipantDto> ApplyRaisedHandState(int meetingId, IEnumerable<ParticipantDto> participants)

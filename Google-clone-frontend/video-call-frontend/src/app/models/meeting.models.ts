@@ -34,6 +34,13 @@ export interface Participant {
   connectionId?: string;
 }
 
+export interface WaitingParticipant {
+  userId: string;
+  userName: string;
+  profilePictureUrl?: string | null;
+  requestedAt?: Date | string | null;
+}
+
 export interface JoinMeetingRequest {
   meetingCode: string;
 }
@@ -84,6 +91,11 @@ export interface MeetingReaction {
   userName: string;
   reaction: string;
   sentAt: Date | string;
+}
+
+export interface WaitingRoomState {
+  meetingId: number;
+  isWaiting: boolean;
 }
 
 export interface ApiResponse<T> {

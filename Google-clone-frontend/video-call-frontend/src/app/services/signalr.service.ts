@@ -9,6 +9,8 @@ import {
   MeetingReaction,
   Participant,
   ScreenShareState,
+  WaitingParticipant,
+  WaitingRoomState,
   WebRTCAnswer,
   WebRTCIceCandidate,
   WebRTCOffer
@@ -21,6 +23,8 @@ import { ChatMessage } from '../models/chat.models';
 export class SignalrService {
   private hubConnection?: HubConnection;
   private currentMeetingCode?: string;
+  private currentUserName?: string;
+  private currentUserProfilePictureUrl?: string | null;
   private connectionState = new BehaviorSubject<HubConnectionState>(HubConnectionState.Disconnected);
   
   // Observables for real-time events
@@ -38,6 +42,10 @@ export class SignalrService {
   public handLowered$ = new Subject<HandLowerEvent>();
   public allHandsLowered$ = new Subject<{ meetingId: number }>();
   public reactionReceived$ = new Subject<MeetingReaction>();
+  public waitingRoomEntered$ = new Subject<WaitingRoomState>();
+  public joinApproved$ = new Subject<{ meetingId: number }>();
+  public joinDenied$ = new Subject<{ meetingId: number }>();
+  public waitingParticipantsUpdated$ = new BehaviorSubject<WaitingParticipant[]>([]);
 
   // WebRTC signaling observables
   public offerReceived$ = new Subject<WebRTCOffer>();
@@ -83,6 +91,10 @@ export class SignalrService {
     if (this.hubConnection) {
       await this.hubConnection.stop();
       this.connectionState.next(HubConnectionState.Disconnected);
+      this.currentParticipants$.next([]);
+      this.currentScreenSharerId$.next(null);
+      this.screenShareState$.next(null);
+      this.waitingParticipantsUpdated$.next([]);
       this.log('Disconnected');
     }
   }
@@ -218,6 +230,26 @@ export class SignalrService {
       this.reactionReceived$.next(reaction);
     });
 
+    this.hubConnection.on('WaitingRoomEntered', (state: WaitingRoomState) => {
+      this.log('Waiting room entered', state);
+      this.waitingRoomEntered$.next(state);
+    });
+
+    this.hubConnection.on('JoinApproved', (state: { meetingId: number }) => {
+      this.log('Join approved', state);
+      this.joinApproved$.next(state);
+    });
+
+    this.hubConnection.on('JoinDenied', (state: { meetingId: number }) => {
+      this.log('Join denied', state);
+      this.joinDenied$.next(state);
+    });
+
+    this.hubConnection.on('WaitingParticipantsUpdated', (participants: WaitingParticipant[]) => {
+      this.log('Waiting participants updated', participants);
+      this.waitingParticipantsUpdated$.next(participants);
+    });
+
     // Meeting ended
     this.hubConnection.on('MeetingEnded', () => {
       this.log('Meeting ended');
@@ -238,7 +270,11 @@ export class SignalrService {
       this.connectionState.next(HubConnectionState.Connected);
 
       if (this.currentMeetingCode) {
-        await this.joinMeeting(this.currentMeetingCode);
+        await this.joinMeeting(
+          this.currentMeetingCode,
+          this.currentUserName,
+          this.currentUserProfilePictureUrl
+        );
       }
 
       this.reconnected$.next();
@@ -298,10 +334,12 @@ export class SignalrService {
   }
 
   // Hub method calls
-  public async joinMeeting(meetingCode: string): Promise<void> {
+  public async joinMeeting(meetingCode: string, userName?: string, profilePictureUrl?: string | null): Promise<void> {
     this.currentMeetingCode = meetingCode;
+    this.currentUserName = userName;
+    this.currentUserProfilePictureUrl = profilePictureUrl;
     if (this.hubConnection?.state === HubConnectionState.Connected) {
-      await this.invokeHub('JoinMeeting', meetingCode);
+      await this.invokeHub('JoinMeeting', meetingCode, userName ?? null, profilePictureUrl ?? null);
     }
   }
 
@@ -383,6 +421,24 @@ export class SignalrService {
   public async sendReaction(meetingId: number, reaction: string): Promise<void> {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       await this.invokeHub('SendReaction', meetingId, reaction);
+    }
+  }
+
+  public async admitParticipant(meetingId: number, userId: string): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('AdmitParticipant', meetingId, userId);
+    }
+  }
+
+  public async admitAllParticipants(meetingId: number): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('AdmitAllParticipants', meetingId);
+    }
+  }
+
+  public async denyParticipant(meetingId: number, userId: string): Promise<void> {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      await this.invokeHub('DenyParticipant', meetingId, userId);
     }
   }
 

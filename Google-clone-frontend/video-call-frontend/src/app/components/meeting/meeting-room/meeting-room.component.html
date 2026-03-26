@@ -1,4 +1,5 @@
-<div class="meeting-room-container" *ngIf="!loading">
+<div class="meeting-room-container" *ngIf="!loading && !isJoinDenied">
+  <ng-container *ngIf="!isWaitingForAdmission; else waitingRoomView">
   <!-- Header -->
   <div class="meeting-header">
     <div class="meeting-info">
@@ -154,6 +155,70 @@
         </mat-form-field>
       </div>
       <div class="participants-list">
+        <ng-container *ngIf="isHost && waitingToJoin.length > 0">
+          <div class="meeting-section-label">WAITING TO JOIN</div>
+
+          <div class="people-panel-card waiting-panel-card">
+            <div class="people-section-card">
+              <button type="button" class="people-section-toggle" (click)="toggleWaitingToJoinSection()">
+                <span>Waiting to be admitted</span>
+                <div class="people-section-meta">
+                  <span>{{ waitingToJoin.length }}</span>
+                  <mat-icon>{{ showWaitingToJoinSection ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}</mat-icon>
+                </div>
+              </button>
+
+              <div class="people-section-body" *ngIf="showWaitingToJoinSection">
+                <div class="raised-hands-header">
+                  <span></span>
+                  <button mat-button class="lower-all-button" (click)="admitAllParticipants()">Admit all</button>
+                </div>
+
+                <div class="raised-hand-row" *ngFor="let waitingParticipant of filteredWaitingToJoin">
+                  <div class="participant-main">
+                    <div class="participant-avatar remote-avatar">
+                      <ng-container *ngIf="getAvatarImageUrl(waitingParticipant.profilePictureUrl); else waitingParticipantFallback">
+                        <img [src]="getAvatarImageUrl(waitingParticipant.profilePictureUrl)!" [alt]="waitingParticipant.userName" class="participant-avatar-image">
+                      </ng-container>
+                      <ng-template #waitingParticipantFallback>
+                        <span class="participant-avatar-letter">{{ getAvatarInitial(waitingParticipant.userName) }}</span>
+                      </ng-template>
+                    </div>
+                    <div class="participant-meta">
+                      <div class="participant-line">
+                        <span class="participant-display-name">{{ waitingParticipant.userName }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="raised-hand-actions">
+                    <button mat-button class="lower-hand-button" (click)="admitParticipant(waitingParticipant.userId)">Admit</button>
+                    <button
+                      class="waiting-options-button"
+                      type="button"
+                      (click)="toggleWaitingParticipantMenu($event, waitingParticipant.userId)"
+                      aria-label="More options">
+                      <span class="waiting-options-icon">
+                        <mat-icon>more_vert</mat-icon>
+                      </span>
+                    </button>
+
+                    <div
+                      class="waiting-actions-popup"
+                      *ngIf="openWaitingParticipantMenuUserId === waitingParticipant.userId"
+                      (click)="$event.stopPropagation()">
+                      <button type="button" class="waiting-actions-popup-item" (click)="denyParticipant(waitingParticipant.userId)">
+                        <mat-icon>block</mat-icon>
+                        <span>Deny</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
         <div class="meeting-section-label">IN THE MEETING</div>
 
         <div class="people-panel-card">
@@ -363,6 +428,100 @@
     matTooltip="Chat">
     <mat-icon>{{ showChat ? 'close' : 'chat' }}</mat-icon>
   </button>
+  </ng-container>
+</div>
+
+<ng-template #waitingRoomView>
+  <div class="waiting-room-shell">
+    <div class="waiting-room-main">
+      <div class="waiting-illustration" aria-hidden="true">
+        <div class="waiting-illustration-circle"></div>
+        <div class="waiting-illustration-seat waiting-illustration-seat-left"></div>
+        <div class="waiting-illustration-seat waiting-illustration-seat-right"></div>
+        <div class="waiting-illustration-person"></div>
+      </div>
+      <p class="waiting-room-message">Please wait until a meeting host brings you into the call</p>
+    </div>
+
+    <div class="waiting-preview-card video-container">
+      <ng-container *ngIf="shouldShowVideo(localPreviewTile); else waitingAvatar">
+        <video
+          [srcObject]="localPreviewTile.stream"
+          autoplay
+          playsinline
+          muted
+          class="video-element">
+        </video>
+      </ng-container>
+      <ng-template #waitingAvatar>
+        <div class="tile-avatar-shell waiting-avatar-shell">
+          <ng-container *ngIf="currentUserProfileImageUrl; else waitingFallback">
+            <img [src]="currentUserProfileImageUrl" [alt]="currentUserName" class="tile-avatar-image">
+          </ng-container>
+          <ng-template #waitingFallback>
+            <div class="tile-avatar-fallback">{{ getAvatarInitial(currentUserName) }}</div>
+          </ng-template>
+        </div>
+      </ng-template>
+      <div class="video-overlay">
+        <span class="participant-name">{{ currentUserName }}</span>
+        <div class="video-status">
+          <mat-icon *ngIf="!isCameraOn" class="status-icon">videocam_off</mat-icon>
+          <mat-icon *ngIf="!isMicrophoneOn" class="status-icon">mic_off</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meeting-controls waiting-controls">
+    <div class="meeting-meta-footer">
+      <span>{{ currentTimeLabel }}</span>
+      <span class="meta-divider">|</span>
+      <span>{{ meeting?.meetingCode }}</span>
+    </div>
+
+    <div class="control-buttons">
+      <button mat-mini-fab class="control-button" [class.active]="isCameraOn" [class.off]="!isCameraOn" (click)="toggleCamera()" matTooltip="{{ isCameraOn ? 'Turn off camera' : 'Turn on camera' }}">
+        <mat-icon>{{ isCameraOn ? 'videocam' : 'videocam_off' }}</mat-icon>
+      </button>
+
+      <button mat-mini-fab class="control-button" [class.active]="isMicrophoneOn" [class.off]="!isMicrophoneOn" (click)="toggleMicrophone()" matTooltip="{{ isMicrophoneOn ? 'Mute' : 'Unmute' }}">
+        <mat-icon>{{ isMicrophoneOn ? 'mic' : 'mic_off' }}</mat-icon>
+      </button>
+
+      <button mat-mini-fab class="control-button off leave-button" (click)="leaveMeeting()" matTooltip="Leave meeting">
+        <mat-icon>call_end</mat-icon>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<div class="join-denied-page" *ngIf="!loading && isJoinDenied">
+  <div class="join-denied-topbar">
+    <div class="join-denied-countdown">
+      <mat-progress-spinner mode="determinate" [value]="denyCountdownProgress" diameter="48" strokeWidth="4"></mat-progress-spinner>
+      <span class="join-denied-count-value">{{ denyRedirectSeconds }}</span>
+    </div>
+    <span class="join-denied-topbar-text">Returning to home screen</span>
+  </div>
+
+  <div class="join-denied-content">
+    <h1>Someone in the call denied your request to join</h1>
+
+    <button mat-raised-button color="primary" class="join-denied-button" (click)="returnToHomeScreen()">
+      Return to home screen
+    </button>
+
+    <div class="join-denied-info-card">
+      <div class="join-denied-info-icon">
+        <mat-icon>verified_user</mat-icon>
+      </div>
+      <div class="join-denied-info-copy">
+        <h2>Your meeting is safe</h2>
+        <p>No one can join a meeting unless invited or admitted by the host.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Loading State -->
@@ -372,7 +531,7 @@
 </div>
 
 <!-- Error State -->
-<div class="error-container" *ngIf="errorMessage && !loading">
+<div class="error-container" *ngIf="errorMessage && !loading && !isJoinDenied">
   <mat-icon>error</mat-icon>
   <p>{{ errorMessage }}</p>
   <button mat-raised-button routerLink="/my-meetings">Back to Meetings</button>

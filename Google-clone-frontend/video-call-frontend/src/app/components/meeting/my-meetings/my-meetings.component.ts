@@ -141,6 +141,8 @@ export class MyMeetingsComponent implements OnInit, OnDestroy {
     const time = now.toLocaleTimeString([], {
       hour: 'numeric',
       minute: '2-digit'
+
+      
     });
     const date = now.toLocaleDateString([], {
       weekday: 'short',

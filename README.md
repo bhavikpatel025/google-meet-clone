@@ -34,13 +34,16 @@
 
 ## 🎯 About
 
-**Video Meet Clone** is a full-featured video conferencing application inspired by Google Meet. Built with modern technologies, it provides a seamless experience for creating and joining virtual meetings with real-time video, audio, chat, and screen sharing capabilities.
+**Video Meet Clone** is a full-featured video conferencing application inspired by Google Meet. Built with modern technologies, it provides a seamless experience for creating and joining virtual meetings with real-time video, audio, chat, screen sharing, reactions, and advanced meeting controls.
 
 ### Key Highlights
 
 - 🎥 **Real-time Video & Audio** - WebRTC-powered peer-to-peer connections
 - 💬 **Live Chat** - In-meeting messaging with SignalR
 - 🖥️ **Screen Sharing** - Share your screen with participants
+- 😊 **Reactions** - Express yourself with emoji reactions during calls
+- ✋ **Hand Raise** - Request to speak with a visual indicator
+- 🚪 **Waiting Room** - Host approval system before joining meetings
 - 📧 **Email Invitations** - Send meeting links via email
 - 👤 **Profile Pictures** - Upload and display user avatars
 - 🎨 **Responsive Design** - Works seamlessly on desktop and mobile
@@ -60,6 +63,8 @@
 - **Scheduled Meetings** - Plan meetings for future dates
 - **Meeting Codes** - Unique 8-character codes for easy joining
 - **Meeting History** - View all past and upcoming meetings
+- **Waiting Room** - Host can review and approve participants before they join
+- **Host Controls** - Advanced meeting management capabilities
 
 ### 🎥 Video Conferencing
 - **Real-time Video/Audio** - High-quality WebRTC connections
@@ -67,32 +72,65 @@
 - **Microphone Controls** - Mute/unmute audio
 - **Dynamic Video Grid** - Automatically adjusts based on participant count
 - **Profile Picture Fallback** - Display user avatar when camera is off
+- **Camera/Microphone Status Indicators** - Visual feedback for all participants
 
 ### 🖥️ Screen Sharing
 - **Desktop Sharing** - Share entire screen or specific windows
 - **Application Sharing** - Share individual applications
 - **Real-time Sync** - All participants see shared content instantly
+- **Screen Share Indicators** - Visual cues when someone is presenting
 
 ### 💬 Chat System
 - **Real-time Messaging** - Instant in-meeting chat
 - **Message History** - View all messages sent during the meeting
 - **System Notifications** - Alerts when users join/leave
+- **Typing Indicators** - See when participants are typing
+
+### 😊 Reactions & Interactions
+- **Emoji Reactions** - Express emotions during the meeting
+  - 👍 Thumbs Up
+  - ❤️ Heart
+  - 😂 Laugh
+  - 👏 Clap
+  - 🎉 Celebrate
+  - And more!
+- **Real-time Display** - Reactions appear as floating animations
+- **Quick Access** - Easy-to-use reaction toolbar
+
+### ✋ Hand Raise System
+- **Request to Speak** - Raise your hand to get host's attention
+- **Visual Indicator** - Hand icon appears next to participant's name
+- **Priority Queue** - Host can see who raised hand first
+- **Lower Hand** - Manually lower or auto-lower after speaking
+- **Host Notifications** - Alert when participants raise hands
+
+### 🚪 Waiting Room
+- **Pre-Meeting Lobby** - Participants wait for host approval
+- **Host Dashboard** - View all waiting participants
+- **Admit/Deny Controls** - Accept or reject join requests
+- **Bulk Admit** - Admit all waiting participants at once
+- **Custom Waiting Messages** - Display information to waiting users
+- **Auto-Admit Settings** - Option to disable waiting room for trusted users
 
 ### 👥 Participant Management
-- **Participant List** - See all active participants
+- **Participant List** - See all active participants with status indicators
 - **Email Invitations** - Invite users via email
 - **Join via Link** - Direct meeting access from invitation emails
-- **Host Controls** - Meeting host can manage participants
+- **Host Controls** - Manage participants, remove users if needed
+- **Participant Status** - See who has camera/mic on, who raised hand
+- **Kick/Remove** - Host can remove disruptive participants
 
 ### 👤 User Profile Features
 - **Profile Picture Upload** - Store images in `backend/wwwroot/profile/`
 - **Default Avatars** - First letter of name shown if no picture uploaded
 - **Profile Display** - Show avatar instead of video when camera is off
+- **Status Indicators** - Online/offline, in-meeting status
 
 ### 📧 Email Integration
 - **SMTP Integration** - Send meeting invitations via email
 - **Meeting Links** - Include direct join links in emails
 - **Invitation Templates** - Professional email templates
+- **Reminder Emails** - Automated meeting reminders (optional)
 
 ---
 
@@ -175,6 +213,7 @@
 │  • Auth (Login, Register)        │
 │  • Meeting (Create, Join, Room)  │
 │  • Profile (Settings, Upload)    │
+│  • Waiting Room (Lobby)          │
 └────────────┬─────────────────────┘
              │
 ┌────────────▼─────────────────────┐
@@ -183,6 +222,7 @@
 │  • Meeting Service               │
 │  • SignalR Service               │
 │  • WebRTC Service                │
+│  • Reaction Service              │
 └────────────┬─────────────────────┘
              │
 ┌────────────▼─────────────────────┐
@@ -275,11 +315,16 @@ ng serve --ssl
 
 1. **Register** a new user at `/register`
 2. **Login** with your credentials
-3. **Create Meeting** - Get a meeting code
-4. **Join Meeting** - Use the code to join
-5. Open **incognito window** to test with second user
+3. **Create Meeting** - Get a meeting code and enable waiting room
+4. **Join Meeting** - Open incognito window, join with code (will enter waiting room)
+5. **Admit Participant** - Host admits from waiting room
 6. Enable camera/microphone when prompted
-7. Test video call features! 🎉
+7. Test new features:
+   - 😊 Click reaction button and select emoji
+   - ✋ Raise hand to request to speak
+   - 💬 Send chat messages
+   - 🖥️ Share your screen
+8. Enjoy your enhanced video meeting! 🎉
 
 ---
 
@@ -307,6 +352,11 @@ ng serve --ssl
     "SenderName": "Video Meet Clone",
     "Username": "your-email@gmail.com",
     "Password": "your-app-password"
+  },
+  "MeetingSettings": {
+    "WaitingRoomEnabled": true,
+    "MaxParticipants": 50,
+    "ReactionDisplayDuration": 3000
   }
 }
 ```
@@ -319,7 +369,12 @@ ng serve --ssl
 export const environment = {
   production: false,
   apiUrl: 'https://localhost:7001/api',
-  hubUrl: 'https://localhost:7001/hubs/videocall'
+  hubUrl: 'https://localhost:7001/hubs/videocall',
+  features: {
+    waitingRoom: true,
+    reactions: true,
+    handRaise: true
+  }
 };
 ```
 
@@ -360,7 +415,8 @@ export const environment = {
 2. Click **"Create Meeting"**
 3. Fill in meeting details:
    - Title
-   
+   - Scheduled time (optional)
+   - Enable/disable waiting room
 4. Click **"Create"** to generate meeting code
 5. **Share the code** with participants
 
@@ -369,15 +425,35 @@ export const environment = {
 **Method 1: Meeting Code**
 1. Click **"Join Meeting"**
 2. Enter the 8-character code
-3. Click **"Join"**
+3. If waiting room is enabled, wait for host approval
+4. Click **"Join"** once admitted
 
 **Method 2: Email Invitation**
 1. Click the **meeting link** in invitation email
-2. Automatically joins the meeting
+2. Enter waiting room if enabled
+3. Automatically joins once host admits you
 
 **Method 3: My Meetings**
 1. Go to **"My Meetings"**
 2. Click **"Join"** on any active meeting
+3. Bypass waiting room as meeting creator
+
+### Waiting Room (Host)
+
+**As Meeting Host:**
+1. See **"Waiting Room"** badge with count
+2. Click to view all waiting participants
+3. Review participant details
+4. **Admit** individual participants
+5. **Admit All** to let everyone in at once
+6. **Deny** to reject join requests
+7. Receive notifications when new participants arrive
+
+**As Participant:**
+1. Enter meeting code and click join
+2. See **"Waiting for host..."** message
+3. Wait patiently for approval
+4. Automatically enter meeting once admitted
 
 ### During a Meeting
 
@@ -387,15 +463,47 @@ export const environment = {
 - 🖥️ Share screen
 - 📱 View participants
 - 💬 Open chat panel
+- 😊 Send reactions
+- ✋ Raise/lower hand
+
+**Using Reactions:**
+1. Click the **Reaction** button (😊 icon)
+2. Select from emoji panel:
+   - 👍 Thumbs Up
+   - ❤️ Heart
+   - 😂 Laugh
+   - 👏 Clap
+   - 🎉 Celebrate
+   - 😮 Surprised
+   - 🤔 Thinking
+   - 👋 Wave
+3. Your reaction appears as floating animation
+4. All participants see your reaction in real-time
+5. Reactions auto-disappear after 3 seconds
+
+**Using Hand Raise:**
+1. Click the **Hand Raise** button (✋ icon)
+2. Your hand icon appears next to your name
+3. All participants see you raised your hand
+4. Host receives notification
+5. Click again to lower your hand
+6. Or hand auto-lowers when you start speaking
 
 **Host Controls:**
 - 📧 Invite participants via email
-- ❌ End meeting for all
+- 🚪 Manage waiting room
+- ✋ See all raised hands with timestamps
+- ❌ Remove participants if needed
+- 🔇 Mute all participants
+- 🎬 End meeting for all
 
 **Participant Features:**
-- 👋 See all participants
+- 👋 See all participants with status indicators
 - 💬 Send chat messages
+- 😊 React with emojis
+- ✋ Raise hand to speak
 - 📤 Leave meeting
+- 🖥️ View screen shares
 
 ### Uploading Profile Picture
 
@@ -404,6 +512,7 @@ export const environment = {
 3. Select image file (JPG, PNG)
 4. Image saves to `backend/wwwroot/profile/`
 5. Picture displays when camera is off
+6. Appears in waiting room and participant list
 
 ---
 
@@ -415,7 +524,14 @@ video-meet-clone/
 ├── backend/
 │   ├── VideoCallApp.API/              # API Layer
 │   │   ├── Controllers/               # REST endpoints
+│   │   │   ├── AuthController.cs
+│   │   │   ├── MeetingController.cs
+│   │   │   ├── ChatController.cs
+│   │   │   ├── ProfileController.cs
+│   │   │   └── WaitingRoomController.cs
 │   │   ├── Hubs/                      # SignalR hubs
+│   │   │   ├── VideoCallHub.cs
+│   │   │   └── WaitingRoomHub.cs
 │   │   ├── Middleware/                # Error handling
 │   │   ├── wwwroot/                   # Static files
 │   │   │   └── profile/               # Profile pictures
@@ -423,7 +539,15 @@ video-meet-clone/
 │   │
 │   ├── VideoCallApp.Application/      # Application Layer
 │   │   ├── DTOs/                      # Data transfer objects
+│   │   │   ├── MeetingDto.cs
+│   │   │   ├── ParticipantDto.cs
+│   │   │   ├── ReactionDto.cs
+│   │   │   ├── HandRaiseDto.cs
+│   │   │   └── WaitingRoomDto.cs
 │   │   ├── Interfaces/                # Service contracts
+│   │   │   ├── IMeetingService.cs
+│   │   │   ├── IReactionService.cs
+│   │   │   └── IWaitingRoomService.cs
 │   │   ├── Validators/                # Input validation
 │   │   └── Mappings/                  # AutoMapper profiles
 │   │
@@ -432,33 +556,61 @@ video-meet-clone/
 │   │   │   ├── AuthService.cs
 │   │   │   ├── MeetingService.cs
 │   │   │   ├── EmailService.cs
-│   │   │   └── StorageService.cs
+│   │   │   ├── StorageService.cs
+│   │   │   ├── ReactionService.cs
+│   │   │   └── WaitingRoomService.cs
 │   │   └── Configuration/
 │   │
 │   ├── VideoCallApp.Persistence/      # Persistence Layer
 │   │   ├── Data/                      # DbContext
+│   │   │   └── ApplicationDbContext.cs
 │   │   └── Migrations/                # EF migrations
 │   │
 │   └── VideoCallApp.Domain/           # Domain Layer
 │       └── Entities/                  # Domain models
+│           ├── User.cs
+│           ├── Meeting.cs
+│           ├── Participant.cs
+│           ├── Message.cs
+│           ├── Reaction.cs
+│           ├── HandRaise.cs
+│           └── WaitingRoomEntry.cs
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── components/
 │   │   │   │   ├── auth/              # Login, Register
+│   │   │   │   │   ├── login/
+│   │   │   │   │   └── register/
 │   │   │   │   ├── meeting/           # Meeting components
-│   │   │   │   └── profile/           # Profile management
+│   │   │   │   │   ├── create-meeting/
+│   │   │   │   │   ├── join-meeting/
+│   │   │   │   │   ├── meeting-room/
+│   │   │   │   │   ├── waiting-room/
+│   │   │   │   │   ├── participants-list/
+│   │   │   │   │   ├── reactions-panel/
+│   │   │   │   │   └── hand-raise-indicator/
+│   │   │   │   ├── profile/           # Profile management
+│   │   │   │   └── chat/              # Chat panel
 │   │   │   ├── services/              # Angular services
 │   │   │   │   ├── auth.service.ts
 │   │   │   │   ├── meeting.service.ts
 │   │   │   │   ├── signalr.service.ts
-│   │   │   │   └── webrtc.service.ts
+│   │   │   │   ├── webrtc.service.ts
+│   │   │   │   ├── reaction.service.ts
+│   │   │   │   ├── hand-raise.service.ts
+│   │   │   │   └── waiting-room.service.ts
 │   │   │   ├── models/                # TypeScript interfaces
+│   │   │   │   ├── meeting.model.ts
+│   │   │   │   ├── participant.model.ts
+│   │   │   │   ├── reaction.model.ts
+│   │   │   │   └── waiting-room.model.ts
 │   │   │   ├── guards/                # Route guards
 │   │   │   └── interceptors/          # HTTP interceptors
 │   │   ├── environments/              # Environment configs
 │   │   └── assets/                    # Images, icons
+│   │       └── emojis/                # Reaction emojis
 │   │
 │   ├── package.json
 │   └── angular.json
@@ -466,7 +618,9 @@ video-meet-clone/
 ├── docs/                              # Documentation
 │   ├── SETUP_GUIDE.md
 │   ├── API_DOCUMENTATION.md
-│   └── ARCHITECTURE.md
+│   ├── ARCHITECTURE.md
+│   ├── FEATURES.md
+│   └── TROUBLESHOOTING.md
 │
 ├── .gitignore
 ├── LICENSE
@@ -483,17 +637,29 @@ video-meet-clone/
 ### Dashboard (My Meetings)
 *Coming soon - Add screenshot of meeting list*
 
-### Create Meeting
-*Coming soon - Add screenshot of meeting creation form*
+### Create Meeting (with Waiting Room Option)
+*Coming soon - Add screenshot of meeting creation form with waiting room toggle*
 
-### Meeting Room - Video Grid
-*Coming soon - Add screenshot of active meeting with video grid*
+### Waiting Room - Host View
+*Coming soon - Add screenshot of host waiting room dashboard with pending participants*
+
+### Waiting Room - Participant View
+*Coming soon - Add screenshot of waiting room from participant perspective*
+
+### Meeting Room - Video Grid with Reactions
+*Coming soon - Add screenshot of active meeting with floating emoji reactions*
+
+### Hand Raise Indicator
+*Coming soon - Add screenshot showing raised hand icon next to participant name*
+
+### Reaction Panel
+*Coming soon - Add screenshot of emoji reaction selector*
 
 ### Chat Panel
 *Coming soon - Add screenshot of in-meeting chat*
 
-### Participant List
-*Coming soon - Add screenshot of participants panel*
+### Participant List with Status Indicators
+*Coming soon - Add screenshot of participants panel showing camera/mic/hand status*
 
 ### Profile Picture Upload
 *Coming soon - Add screenshot of profile settings*
@@ -523,6 +689,31 @@ video-meet-clone/
 | POST | `/api/Meeting/{id}/leave` | Leave meeting |
 | POST | `/api/Meeting/{id}/end` | End meeting (host) |
 | GET | `/api/Meeting/{id}/participants` | Get participants |
+| PUT | `/api/Meeting/{id}/waiting-room` | Toggle waiting room |
+
+### Waiting Room Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/WaitingRoom/{meetingId}` | Get waiting participants |
+| POST | `/api/WaitingRoom/admit` | Admit participant |
+| POST | `/api/WaitingRoom/admit-all` | Admit all waiting |
+| POST | `/api/WaitingRoom/deny` | Deny participant |
+
+### Reaction Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/Reaction` | Send reaction |
+| GET | `/api/Reaction/meeting/{id}` | Get recent reactions |
+
+### Hand Raise Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/HandRaise/raise` | Raise hand |
+| POST | `/api/HandRaise/lower` | Lower hand |
+| GET | `/api/HandRaise/meeting/{id}` | Get raised hands |
 
 ### Chat Endpoints
 
@@ -547,6 +738,12 @@ video-meet-clone/
 - `CameraToggled` - Camera state changed
 - `MicrophoneToggled` - Microphone state changed
 - `ScreenShareToggled` - Screen share state changed
+- `ReactionReceived` - Emoji reaction sent
+- `HandRaised` - Participant raised hand
+- `HandLowered` - Participant lowered hand
+- `ParticipantWaiting` - New participant in waiting room
+- `ParticipantAdmitted` - Participant admitted from waiting room
+- `ParticipantDenied` - Participant denied entry
 
 **Client → Server:**
 - `JoinMeeting` - Join meeting room
@@ -555,6 +752,10 @@ video-meet-clone/
 - `SendAnswer` - Send WebRTC answer
 - `SendIceCandidate` - Send ICE candidate
 - `SendMessage` - Send chat message
+- `SendReaction` - Send emoji reaction
+- `RaiseHand` - Raise hand
+- `LowerHand` - Lower hand
+- `RequestJoinMeeting` - Request to join (waiting room)
 
 For detailed API documentation, visit `/swagger` when backend is running.
 
@@ -567,12 +768,12 @@ For detailed API documentation, visit `/swagger` when backend is running.
 - [ ] **Breakout Rooms** - Split participants into smaller groups
 - [ ] **Live Captions** - Real-time speech-to-text
 - [ ] **Virtual Backgrounds** - Custom/blurred backgrounds
-- [ ] **Reactions** - Emoji reactions during calls
-- [ ] **Hand Raise** - Request to speak indicator
 - [ ] **Whiteboard** - Collaborative drawing tool
 - [ ] **File Sharing** - Share documents during meetings
-- [ ] **Waiting Room** - Host approval before joining
 - [ ] **Meeting Analytics** - Duration, participants stats
+- [ ] **Polls & Surveys** - Interactive voting during meetings
+- [ ] **Q&A Session** - Structured question and answer mode
+- [ ] **Language Translation** - Real-time message translation
 
 ### Technical Improvements
 - [ ] **Mobile Apps** - iOS and Android native apps
@@ -583,6 +784,8 @@ For detailed API documentation, visit `/swagger` when backend is running.
 - [ ] **Load Balancing** - Handle more concurrent users
 - [ ] **End-to-End Encryption** - Enhanced security
 - [ ] **OAuth Integration** - Google/Microsoft login
+- [ ] **WebSocket Optimization** - Better real-time performance
+- [ ] **Media Server** - Dedicated SFU for large meetings
 
 ### UI/UX Enhancements
 - [ ] **Dark Mode** - Theme switching
@@ -590,6 +793,9 @@ For detailed API documentation, visit `/swagger` when backend is running.
 - [ ] **Internationalization** - Multi-language support
 - [ ] **Custom Themes** - Branded meeting rooms
 - [ ] **Mobile Responsive** - Better mobile experience
+- [ ] **Keyboard Shortcuts** - Quick actions
+- [ ] **Picture-in-Picture** - Floating video window
+- [ ] **Grid View Options** - Multiple layout modes
 
 ---
 
@@ -614,11 +820,34 @@ We welcome contributions! Please follow these steps:
 
 ### Contribution Guidelines
 
-- Follow existing code style
+- Follow existing code style and architecture
 - Write meaningful commit messages
 - Add tests for new features
 - Update documentation
 - Ensure all tests pass
+- Test on multiple browsers/devices
+
+### Development Setup
+
+```bash
+# Install backend dependencies
+cd backend/VideoCallApp.API
+dotnet restore
+
+# Install frontend dependencies
+cd frontend/video-call-frontend
+npm install
+
+# Run database migrations
+dotnet ef database update
+
+# Start development
+# Terminal 1: Backend
+dotnet watch run
+
+# Terminal 2: Frontend
+ng serve --ssl
+```
 
 ---
 
@@ -629,7 +858,8 @@ Found a bug? Please open an issue with:
 - Steps to reproduce
 - Expected behavior
 - Screenshots (if applicable)
-- Environment details
+- Environment details (OS, browser, versions)
+- Error messages or console logs
 
 ---
 
@@ -638,6 +868,14 @@ Found a bug? Please open an issue with:
 Need help? You can:
 
 - 📧 Email: patelbhavik.0017@gmail.com
+- 🐛 Issues: [GitHub Issues](https://github.com/bhavikpatel025/video-meet-clone/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/bhavikpatel025/video-meet-clone/discussions)
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -647,8 +885,38 @@ Need help? You can:
 - **WebRTC** - Real-time communication technology
 - **.NET Team** - Amazing framework
 - **Angular Team** - Powerful frontend framework
+- **SignalR Team** - Real-time messaging solution
 - **Open Source Community** - Libraries and tools
 
 ---
 
-Made with ❤️ by Bhavik patel(https://github.com/bhavikpatel025)
+## 📊 Project Statistics
+
+- **Lines of Code:** ~15,000+
+- **Components:** 25+
+- **Services:** 12+
+- **API Endpoints:** 30+
+- **Database Tables:** 10+
+- **SignalR Events:** 20+
+
+---
+
+## 🎉 Recent Updates
+
+### Version 2.0.0 - New Interactive Features
+- ✨ Added emoji reactions during meetings
+- ✨ Implemented hand raise system for speaker requests
+- ✨ Built waiting room with host approval system
+- 🐛 Fixed camera toggle issues
+- 🐛 Improved WebRTC connection stability
+- 📚 Enhanced documentation
+
+---
+
+<div align="center">
+
+### Made with ❤️ by [Bhavik Patel](https://github.com/bhavikpatel025)
+
+**⭐ Star this repo if you find it helpful!**
+
+</div>

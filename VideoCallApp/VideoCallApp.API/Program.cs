@@ -60,12 +60,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // SignalR
 builder.Services.AddSignalR();
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://google-meet-clone-three-eta.vercel.app")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

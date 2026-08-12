@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -56,11 +56,12 @@ public static class DependencyInjection
                     {
                         context.Token = accessToken;
                     }
-
                     return Task.CompletedTask;
                 }
             };
         });
+
+        services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
 
         // Services
         services.AddScoped<ITokenService, TokenService>();
@@ -68,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<IMeetingService, MeetingService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IMeetingInvitationEmailService, MeetingInvitationEmailService>();
+        services.AddScoped<IPhotoService, PhotoService>();
 
         return services;
     }

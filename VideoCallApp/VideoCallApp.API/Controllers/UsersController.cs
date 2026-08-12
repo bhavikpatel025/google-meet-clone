@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using VideoCallApp.API.Models;
 using VideoCallApp.Application.Common;
 using VideoCallApp.Application.DTOs.Auth;
+using VideoCallApp.Application.Interfaces;
 using VideoCallApp.Domain.Entities;
 
 namespace VideoCallApp.API.Controllers;
@@ -24,12 +25,12 @@ public class UsersController : ControllerBase
     private const long MaxProfileImageSize = 2 * 1024 * 1024;
 
     private readonly UserManager<User> _userManager;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IPhotoService _photoService;
 
-    public UsersController(UserManager<User> userManager, IWebHostEnvironment environment)
+    public UsersController(UserManager<User> userManager, IPhotoService photoService)
     {
         _userManager = userManager;
-        _environment = environment;
+        _photoService = photoService;
     }
 
     [HttpPost("upload-profile-image")]
@@ -68,21 +69,30 @@ public class UsersController : ControllerBase
                 "User not found"));
         }
 
-        var profileDirectory = GetProfileDirectory();
-        Directory.CreateDirectory(profileDirectory);
-
-        DeleteExistingProfileImage(user.ProfilePictureUrl);
-
-        var fileName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
-        var filePath = Path.Combine(profileDirectory, fileName);
-
-        await using (var stream = System.IO.File.Create(filePath))
+        if (!string.IsNullOrWhiteSpace(user.ProfilePictureUrl) && user.ProfilePictureUrl.Contains("cloudinary.com"))
         {
-            await file.CopyToAsync(stream);
+            await _photoService.DeletePhotoAsync(user.ProfilePictureUrl);
         }
 
-        user.ProfilePictureUrl = $"/profile/{fileName}";
-        await _userManager.UpdateAsync(user);
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var photoUrl = await _photoService.AddPhotoAsync(stream, file.FileName);
+            if (photoUrl == null)
+            {
+                return BadRequest(ApiResponse<ProfileImageResponseDto>.ErrorResponse(
+                    "Profile image upload failed",
+                    "Could not upload image to cloud storage"));
+            }
+            user.ProfilePictureUrl = photoUrl;
+            await _userManager.UpdateAsync(user);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<ProfileImageResponseDto>.ErrorResponse(
+                "Profile image upload failed",
+                ex.Message));
+        }
 
         return Ok(ApiResponse<ProfileImageResponseDto>.SuccessResponse(
             new ProfileImageResponseDto { ProfileImageUrl = user.ProfilePictureUrl },
@@ -100,7 +110,10 @@ public class UsersController : ControllerBase
                 "User not found"));
         }
 
-        DeleteExistingProfileImage(user.ProfilePictureUrl);
+        if (!string.IsNullOrWhiteSpace(user.ProfilePictureUrl) && user.ProfilePictureUrl.Contains("cloudinary.com"))
+        {
+            await _photoService.DeletePhotoAsync(user.ProfilePictureUrl);
+        }
         user.ProfilePictureUrl = null;
         await _userManager.UpdateAsync(user);
 
@@ -113,36 +126,5 @@ public class UsersController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return string.IsNullOrWhiteSpace(userId) ? null : await _userManager.FindByIdAsync(userId);
-    }
-
-    private string GetProfileDirectory()
-    {
-        var webRootPath = _environment.WebRootPath;
-        if (string.IsNullOrWhiteSpace(webRootPath))
-        {
-            webRootPath = Path.Combine(_environment.ContentRootPath, "wwwroot");
-        }
-
-        return Path.Combine(webRootPath, "profile");
-    }
-
-    private void DeleteExistingProfileImage(string? profileImageUrl)
-    {
-        if (string.IsNullOrWhiteSpace(profileImageUrl))
-        {
-            return;
-        }
-
-        var fileName = Path.GetFileName(profileImageUrl);
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            return;
-        }
-
-        var existingPath = Path.Combine(GetProfileDirectory(), fileName);
-        if (System.IO.File.Exists(existingPath))
-        {
-            System.IO.File.Delete(existingPath);
-        }
     }
 }
